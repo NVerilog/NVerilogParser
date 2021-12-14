@@ -8,7 +8,7 @@
     <ApplicationIcon />
     <StartupObject />
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Version>1.0.0-alfa</Version>
+    <Version>1.0.0-alfa-2</Version>
     <Authors>Marcin Gołębiowski</Authors>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
