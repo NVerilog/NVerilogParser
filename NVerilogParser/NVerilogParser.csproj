@@ -8,10 +8,12 @@
     <ApplicationIcon />
     <StartupObject />
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Version>1.0.0-alfa-2</Version>
+    <Version>1.0.0-alfa-3</Version>
     <Authors>Marcin Gołębiowski</Authors>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+    <PackageProjectUrl>https://github.com/CFGToolkit/NVerilogParser</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/CFGToolkit/NVerilogParser</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>
