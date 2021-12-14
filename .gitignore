@@ -348,3 +348,8 @@ MigrationBackup/
 
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
+/Gerator.Sandbox/VerilogGrammar.txt
+/Sample
+/Gerator.Sandbox/Program.cs
+/Gerator.Sandbox/Gerator.Sandbox.csproj
+/CFGToolkit.Console/VerilogGrammar.txt
