@@ -31,10 +31,10 @@ namespace NVerilogParser.Tests
 
             var results = parser.TryParse(txt);
 
-            var state = results.State;
+            var state = results.GlobalState;
             if (!results.WasSuccessful)
             {
-                string remaining = string.Join(string.Empty, results.Input.Source.Skip(results.State.LastConsumedPosition + 1).Select(s => s.Value));
+                string remaining = string.Join(string.Empty, results.Input.Source.Skip(state.LastConsumedPosition + 1).Select(s => s.Value));
                 string all = string.Join(string.Empty, results.Input.Source.Select(s => s.Value));
 
                 Assert.True(false, remaining + "\r\n==\r\n" + all);

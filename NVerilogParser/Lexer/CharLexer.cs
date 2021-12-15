@@ -1,4 +1,5 @@
 ﻿using CFGToolkit.ParserCombinator;
+using CFGToolkit.ParserCombinator.Input;
 using NPreprocessor;
 using System;
 using System.Collections.Generic;

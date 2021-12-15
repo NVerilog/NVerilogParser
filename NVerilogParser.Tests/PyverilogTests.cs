@@ -1,5 +1,6 @@
 using CFGToolkit.ParserCombinator;
-using CFGToolkit.Parsers.VerilogAMS;
+using CFGToolkit.ParserCombinator.Input;
+using CFGToolkit.ParserCombinator.Values;
 using NPreprocessor.Macros;
 using System.Collections.Generic;
 using System.IO;
@@ -37,12 +38,12 @@ namespace NVerilogParser.Tests
             var result = Task.WaitAll(new[] { task }, timeout);
             Assert.True(result, txt);
 
-            var state = results.State;
+            var state = results.GlobalState;
             if (!results.WasSuccessful)
             {
                 var raw = string.Join(string.Empty, results.Input.Source.Select(s => s.Value));
 
-                var nonConsumed = results.Input.Source.Skip(results.State.LastConsumedPosition + 1);
+                var nonConsumed = results.Input.Source.Skip(state.LastConsumedPosition + 1);
                 string ctxt = string.Join(string.Empty, nonConsumed.Select(s => s.Value));
                 Assert.True(false, ctxt + "\r\n==\r\n" + txt);
             }

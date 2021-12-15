@@ -1,5 +1,7 @@
 ﻿using CFGToolkit.ParserCombinator;
+using CFGToolkit.ParserCombinator.Input;
 using CFGToolkit.ParserCombinator.Parsers;
+using CFGToolkit.ParserCombinator.Values;
 using CFGToolkit.Parsers.VerilogAMS;
 using NVerilogParser.AST;
 using System;
@@ -283,7 +285,7 @@ namespace NVerilogParser
             Parsers.module_identifier.Value.After((args) =>
             {
                 var state = (VerilogParserState)args.GlobalState;
-                if (args.ParserResult.WasSuccessful && args.ParserState.HasParser("module_declaration", 10))
+                if (args.ParserResult.WasSuccessful && args.ParserCallStack.HasParser("module_declaration", 10))
                 {
                     state.VerilogSymbolTable.UpdateScopeName(ScopeType.Module, args.ParserResult.Values[0].Text());
                 }
@@ -312,7 +314,7 @@ namespace NVerilogParser
             Parsers.function_identifier.Value.After((args) =>
             {
                 var state = (VerilogParserState)args.GlobalState;
-                if (args.ParserResult.WasSuccessful && args.ParserState.HasParser("function_declaration", 10))
+                if (args.ParserResult.WasSuccessful && args.ParserCallStack.HasParser("function_declaration", 10))
                 {
                     state.VerilogSymbolTable.UpdateScopeName(ScopeType.Function, args.ParserResult.Values[0].Text());
                 }
@@ -336,11 +338,11 @@ namespace NVerilogParser
             {
                 var state = (VerilogParserState)args.GlobalState;
                 if (args.ParserResult.WasSuccessful
-                    && (args.ParserState.HasParser("seq_block", 10)
-                    || args.ParserState.HasParser("analog_function_seq_block", 10)
-                    || args.ParserState.HasParser("analog_event_seq_block", 10)
-                    || args.ParserState.HasParser("par_block", 10)
-                    || args.ParserState.HasParser("analog_seq_block", 10)))
+                    && (args.ParserCallStack.HasParser("seq_block", 10)
+                    || args.ParserCallStack.HasParser("analog_function_seq_block", 10)
+                    || args.ParserCallStack.HasParser("analog_event_seq_block", 10)
+                    || args.ParserCallStack.HasParser("par_block", 10)
+                    || args.ParserCallStack.HasParser("analog_seq_block", 10)))
                 {
                     state.VerilogSymbolTable.UpdateScopeName(ScopeType.Block, args.ParserResult.Values[0].Text());
                 }

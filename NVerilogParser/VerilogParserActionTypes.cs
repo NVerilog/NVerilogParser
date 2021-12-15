@@ -1,5 +1,8 @@
 ﻿using CFGToolkit.ParserCombinator;
+using CFGToolkit.ParserCombinator.Input;
 using CFGToolkit.ParserCombinator.Parsers;
+using CFGToolkit.ParserCombinator.State;
+using CFGToolkit.ParserCombinator.Values;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,12 +11,12 @@ namespace NVerilogParser
 {
     public class VerilogParserActionTypes
     {
-        public static Action<AfterArgs<CharToken>> Not<TResult>(string[] forbidden, Func<IUnionResultValue<CharToken>, IParserState<CharToken>, string> factory)
+        public static Action<AfterArgs<CharToken>> Not<TResult>(string[] forbidden, Func<IUnionResultValue<CharToken>, IParserCallStack<CharToken>, string> factory)
         {
             return (args) =>
             {
                 var obj = args.ParserResult;
-                var scope = args.ParserState;
+                var callStack = args.ParserCallStack;
 
                 if (obj.WasSuccessful)
                 {
@@ -21,7 +24,7 @@ namespace NVerilogParser
 
                     foreach (var item in obj.Values)
                     {
-                        var value = factory(item, scope)?.Trim();
+                        var value = factory(item, callStack)?.Trim();
 
                         if (value != null)
                         {
@@ -36,23 +39,24 @@ namespace NVerilogParser
             };
         }
 
-        public static Action<AfterArgs<CharToken>> Not<TResult>(Func<VerilogParserState, IInput<CharToken>, IParserState<CharToken>, string, bool> forbidden, Func<IUnionResultValue<CharToken>, IParserState<CharToken>, string> factory)
+        public static Action<AfterArgs<CharToken>> Not<TResult>(Func<VerilogParserState, IInputStream<CharToken>, IParserCallStack<CharToken>, string, bool> forbidden, Func<IUnionResultValue<CharToken>, IParserCallStack<CharToken>, string> factory)
         {
             return (args) =>
             {
                 var obj = args.ParserResult;
-                var scope = args.ParserState;
+                var callStack = args.ParserCallStack;
+
                 if (obj.WasSuccessful)
                 {
                     var newItems = new List<IUnionResultValue<CharToken>>();
 
                     foreach (var item in obj.Values)
                     {
-                        var value = factory(item, scope)?.Trim();
+                        var value = factory(item, callStack)?.Trim();
 
                         if (value != null)
                         {
-                            if (!forbidden((VerilogParserState)args.GlobalState, args.Input, scope, value))
+                            if (!forbidden((VerilogParserState)args.GlobalState, args.Input, callStack, value))
                             {
                                 newItems.Add(item);
                             }
@@ -63,7 +67,7 @@ namespace NVerilogParser
             };
         }
 
-        public static Action<AfterArgs<CharToken>> Limit<TResult>(string[] allowed, Func<IUnionResultValue<CharToken>, IParserState<CharToken>, string> factory)
+        public static Action<AfterArgs<CharToken>> Limit<TResult>(string[] allowed, Func<IUnionResultValue<CharToken>, IParserCallStack<CharToken>, string> factory)
         {
             return (args) =>
             {
@@ -75,7 +79,7 @@ namespace NVerilogParser
 
                     foreach (var item in obj.Values)
                     {
-                        var value = factory(item, args.ParserState)?.Trim();
+                        var value = factory(item, args.ParserCallStack)?.Trim();
 
                         if (value != null)
                         {
@@ -90,17 +94,17 @@ namespace NVerilogParser
             };
         }
 
-        public static Action<AfterArgs<CharToken>> Enforce<TResult>(string[] dataSetName, string[] parents, Func<IUnionResultValue<CharToken>, IParserState<CharToken>, string> factory, int depth = int.MaxValue)
+        public static Action<AfterArgs<CharToken>> Enforce<TResult>(string[] dataSetName, string[] parents, Func<IUnionResultValue<CharToken>, IParserCallStack<CharToken>, string> factory, int depth = int.MaxValue)
         {
             return (args) =>
             {
                 var obj = args.ParserResult;
                 var state = (VerilogParserState)args.GlobalState;
-                var scope = args.ParserState;
+                var callStack = args.ParserCallStack;
 
                 if (obj.WasSuccessful)
                 {
-                    if (parents.Any(p => scope.HasParser(p, depth)))
+                    if (parents.Any(p => callStack.HasParser(p, depth)))
                     {
                         return;
                     }
@@ -109,7 +113,7 @@ namespace NVerilogParser
 
                     foreach (var item in obj.Values)
                     {
-                        var value = factory(item, args.ParserState)?.Trim();
+                        var value = factory(item, callStack)?.Trim();
 
                         bool remove = true;
                         for (var i = 0; i < dataSetName.Length; i++)
@@ -132,25 +136,25 @@ namespace NVerilogParser
             };
         }
 
-        public static Action<AfterArgs<CharToken>> Enforce<TResult>(Func<string, VerilogParserState, IParserState<CharToken>, bool> validator, string[] parents, Func<IUnionResultValue<CharToken>, IParserState<CharToken>, string> factory, int depth)
+        public static Action<AfterArgs<CharToken>> Enforce<TResult>(Func<string, VerilogParserState, IParserCallStack<CharToken>, bool> validator, string[] parents, Func<IUnionResultValue<CharToken>, IParserCallStack<CharToken>, string> factory, int depth)
         {
             return (args) =>
             {
                 var obj = args.ParserResult;
                 var state = (VerilogParserState)args.GlobalState;
-                var scope = args.ParserState;
+                var callStack = args.ParserCallStack;
 
                 if (obj.WasSuccessful)
                 {
-                    if (parents.Any(p => scope.HasParser(p, depth)))
+                    if (parents.Any(p => callStack.HasParser(p, depth)))
                     {
                         return;
                     }
                     var newItems = new List<IUnionResultValue<CharToken>>();
                     foreach (var item in obj.Values)
                     {
-                        var value = factory(item, scope)?.Trim();
-                        if (validator(value, state, scope))
+                        var value = factory(item, callStack)?.Trim();
+                        if (validator(value, state, callStack))
                         {
                             newItems.Add(item);
                         }
@@ -161,19 +165,19 @@ namespace NVerilogParser
             };
         }
 
-        public static Action<AfterArgs<CharToken>> Collect<TResult>(string destination, string dataSetName, Func<IUnionResultValue<CharToken>, IParserState<CharToken>, IEnumerable<string>> factory)
+        public static Action<AfterArgs<CharToken>> Collect<TResult>(string destination, string dataSetName, Func<IUnionResultValue<CharToken>, IParserCallStack<CharToken>, IEnumerable<string>> factory)
         {
             return (args) =>
             {
                 var obj = args.ParserResult;
                 var state = (VerilogParserState)args.GlobalState;
-                var scope = args.ParserState;
+                var callStack = args.ParserCallStack;
 
                 if (obj.WasSuccessful)
                 {
                     foreach (var res in obj.Values)
                     {
-                        var values = factory(res, scope);
+                        var values = factory(res, callStack);
 
                         foreach (var value in values)
                         {
@@ -185,19 +189,19 @@ namespace NVerilogParser
         }
 
 
-        public static Action<AfterArgs<CharToken>> Collect<TResult>(string[] destinations, string dataSetName, Func<IUnionResultValue<CharToken>, IParserState<CharToken>, IEnumerable<string>> factory)
+        public static Action<AfterArgs<CharToken>> Collect<TResult>(string[] destinations, string dataSetName, Func<IUnionResultValue<CharToken>, IParserCallStack<CharToken>, IEnumerable<string>> factory)
         {
             return (args) =>
             {
                 var obj = args.ParserResult;
                 var state = (VerilogParserState)args.GlobalState;
-                var scope = args.ParserState;
+                var callStack = args.ParserCallStack;
 
                 if (obj.WasSuccessful)
                 {
                     foreach (var res in obj.Values)
                     {
-                        var values = factory(res, scope);
+                        var values = factory(res, callStack);
 
                         foreach (var value in values)
                         {
@@ -211,24 +215,24 @@ namespace NVerilogParser
             };
         }
 
-        public static Action<AfterArgs<CharToken>> Collect<TResult>(string destination, string dataSetName, string parent, Func<IUnionResultValue<CharToken>, IParserState<CharToken>, IEnumerable<string>> factory, int depth = int.MaxValue)
+        public static Action<AfterArgs<CharToken>> Collect<TResult>(string destination, string dataSetName, string parent, Func<IUnionResultValue<CharToken>, IParserCallStack<CharToken>, IEnumerable<string>> factory, int depth = int.MaxValue)
         {
             return (args) =>
             {
                 var obj = args.ParserResult;
                 var globalState = (VerilogParserState)args.GlobalState;
-                var parserState = args.ParserState;
+                var callStack = args.ParserCallStack;
 
                 if (obj.WasSuccessful)
                 {
-                    if (parent != null && !parserState.HasParser(parent, depth))
+                    if (parent != null && !callStack.HasParser(parent, depth))
                     {
                         return;
                     }
 
                     foreach (var res in obj.Values)
                     {
-                        var values = factory(res, parserState);
+                        var values = factory(res, callStack);
                         foreach (var value in values)
                         {
                             globalState.VerilogSymbolTable.RegisterDefinition(value, dataSetName, res.Position);

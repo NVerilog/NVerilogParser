@@ -1,4 +1,5 @@
-﻿using CFGToolkit.ParserCombinator;
+﻿using CFGToolkit.ParserCombinator.Input;
+using CFGToolkit.ParserCombinator.State;
 
 namespace NVerilogParser
 {

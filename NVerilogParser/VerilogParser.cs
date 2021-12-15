@@ -1,4 +1,6 @@
 ﻿using CFGToolkit.ParserCombinator;
+using CFGToolkit.ParserCombinator.Input;
+using CFGToolkit.ParserCombinator.Values;
 using CFGToolkit.Parsers.VerilogAMS;
 using NVerilogParser.AST;
 using System;
