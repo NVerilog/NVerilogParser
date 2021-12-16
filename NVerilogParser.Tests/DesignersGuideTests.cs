@@ -1,56 +1,19 @@
-using CFGToolkit.ParserCombinator;
-using CFGToolkit.ParserCombinator.Input;
-using CFGToolkit.ParserCombinator.Values;
-using NPreprocessor.Macros;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace NVerilogParser.Tests
 {
-    public class DesignersGuideTests
+    public class DesignersGuideTests : BaseTests
     {
-        HttpClient client = new HttpClient();
+        protected override string IncludePath => @"C:\dev\repos\VerilogAMSExamples";
+
+        protected override string BasePath => @"C:\dev\repos\VerilogAMSExamples";
 
         [Theory]
         [MemberData(nameof(Data))]
-        public void ParseAndCheckResult(string name)
+        public void ParseAndCheckResult(string path)
         {
-            IncludeMacro.Provider = (f) => GetTextFromFile(@"C:\dev\repos\VerilogAMSExamples", f);
-
-            var parser = new VerilogParser();
-            string txt = GetTextFromFile(@"C:\dev\repos\VerilogAMSExamples", name);
-
-            var timeout = 1000 * 60 * 10;
-
-            IUnionResult<CharToken> results = null;
-
-            var task = new Task(() => { results = parser.TryParse(txt); });
-            task.Start();
-            var result = Task.WaitAll(new[] { task }, timeout);
-            Assert.True(result, txt);
-
-            var state = results.GlobalState;
-            if (!results.WasSuccessful)
-            {
-                var raw = string.Join(string.Empty, results.Input.Source.Select(s => s.Value));
-
-                var nonConsumed = results.Input.Source.Skip(state.LastConsumedPosition + 1);
-                string ctxt = string.Join(string.Empty, nonConsumed.Select(s => s.Value));
-                Assert.True(false, ctxt + "\r\n==\r\n" + txt);
-            }
-
-            Assert.True(results.WasSuccessful, txt);
-            Assert.True(results.Values.Count == 1, txt);
-            Assert.False(results.Values[0].EmptyMatch);
-        }
-
-        private string GetTextFromFile(string basePath, string fileName)
-        {
-            return File.ReadAllText(@$"{basePath}\{fileName}");
+            Check(path);
         }
 
         public static IEnumerable<object[]> Data => new List<object[]>
@@ -67,7 +30,6 @@ namespace NVerilogParser.Tests
             new object[] { @"ch4-listing12\listing12\adc.vams" },
             new object[] { @"ch4-listing13\listing13\vco.vams" },
             new object[] { @"ch4-listing14\listing14\comparator.vams" },
-
         };
     }
 }

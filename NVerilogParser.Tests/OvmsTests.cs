@@ -1,54 +1,22 @@
-using CFGToolkit.ParserCombinator;
-using NPreprocessor.Macros;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
 using Xunit;
 
 namespace NVerilogParser.Tests
 {
-    public class OvmsTests
+    public class OvmsTests : BaseTests
     {
-        HttpClient client = new HttpClient();
+        protected override string IncludePath => @"C:\dev\repos\ovams";
 
-        public string GetTextFromUrl(string url)
-        {
-            return client.GetStringAsync(url).Result;
-        }
+        protected override string BasePath => @"C:\dev\repos\ovams\testcases";
+
+        protected override string Prefix => @"`include ""disciplines.vams""
+";
 
         [Theory]
         [MemberData(nameof(Data))]
-        public void ParseAndCheckResult(string name)
+        public void ParseAndCheckResult(string testPath)
         {
-            IncludeMacro.Provider = (f) => GetTextFromFile(@"C:\dev\repos\ovams", f);
-
-            var parser = new VerilogParser();
-            string txt = GetTextFromFile(@"C:\dev\repos\ovams\testcases", name);
-
-            txt = @"`include ""disciplines.vams""
-" + txt;
-
-            var results = parser.TryParse(txt);
-
-            var state = results.GlobalState;
-            if (!results.WasSuccessful)
-            {
-                string remaining = string.Join(string.Empty, results.Input.Source.Skip(state.LastConsumedPosition + 1).Select(s => s.Value));
-                string all = string.Join(string.Empty, results.Input.Source.Select(s => s.Value));
-
-                Assert.True(false, remaining + "\r\n==\r\n" + all);
-            }
-
-
-            Assert.True(results.WasSuccessful, txt);
-            Assert.True(results.Values.Count == 1);
-            Assert.False(results.Values[0].EmptyMatch);
-        }
-
-        private string GetTextFromFile(string basePath, string fileName)
-        {
-            return File.ReadAllText(@$"{basePath}\{fileName}");
+            Check(testPath);
         }
 
         public static IEnumerable<object[]> Data => new List<object[]>
