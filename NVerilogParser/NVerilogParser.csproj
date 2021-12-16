@@ -8,15 +8,17 @@
     <ApplicationIcon />
     <StartupObject />
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Version>1.0.0-alfa-3</Version>
+    <Version>1.0.0-alfa-4</Version>
     <Authors>Marcin Gołębiowski</Authors>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <PackageProjectUrl>https://github.com/CFGToolkit/NVerilogParser</PackageProjectUrl>
     <RepositoryUrl>https://github.com/CFGToolkit/NVerilogParser</RepositoryUrl>
+    <Description>A Verilog-(A/AMS) parser for .NET</Description>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="CFGToolkit.AST" Version="1.0.0-beta" />
     <PackageReference Include="CFGToolkit.ParserCombinator" Version="1.0.0-alpha-6" />
     <PackageReference Include="NPreprocessor" Version="1.0.0-alpha-11" />
   </ItemGroup>

@@ -1,9 +1,10 @@
-﻿using CFGToolkit.ParserCombinator;
+﻿using CFGToolkit.AST;
+using CFGToolkit.AST.Providers;
+using CFGToolkit.ParserCombinator;
 using CFGToolkit.ParserCombinator.Input;
 using CFGToolkit.ParserCombinator.Parsers;
 using CFGToolkit.ParserCombinator.Values;
 using CFGToolkit.Parsers.VerilogAMS;
-using NVerilogParser.AST;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -447,72 +448,72 @@ namespace NVerilogParser
             forbidden.AddRange(keywords);
             forbidden.AddRange(buildInFunctions);
 
-            Parsers.seq_block.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>("seq_block", "block_identifier", (obj, scope) => obj.GetValue<SyntaxNode>().GetNodes("block_identifier", DefaultLookupDepth, 0).Select(node => node.Text)));
-            Parsers.task_declaration.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>("module_declaration", "task_identifier", (obj, scope) => obj.GetValue<SyntaxNode>().GetNodes("task_identifier", DefaultLookupDepth, 0).Select(node => node.Text)));
+            Parsers.seq_block.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>("seq_block", "block_identifier", (obj, scope) => obj.GetValue<SyntaxNode>().GetNodes("block_identifier", DefaultLookupDepth).Select(node => node.Text())));
+            Parsers.task_declaration.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>("module_declaration", "task_identifier", (obj, scope) => obj.GetValue<SyntaxNode>().GetNodes("task_identifier", DefaultLookupDepth).Select(node => node.Text())));
 
-            Parsers.nature_attribute.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>("source_text", "nature_attribute_identifier", (obj, scope) => obj.GetValue<SyntaxNode>().GetNodes("nature_attribute_identifier", DefaultLookupDepth, 0).Select(node => node.Text)));
+            Parsers.nature_attribute.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>("source_text", "nature_attribute_identifier", (obj, scope) => obj.GetValue<SyntaxNode>().GetNodes("nature_attribute_identifier", DefaultLookupDepth).Select(node => node.Text())));
             Parsers.nature_attribute.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>("source_text", "nature_attribute_access",
                 (obj, scope) => obj
                 .GetValue<SyntaxNode>()
-                .GetNodes("nature_attribute", DefaultLookupDepth, 0)
-                .Where(n => n.GetNodes("nature_attribute_identifier", DefaultLookupDepth, 0).First().Text == "access")
-                .Select(attr => attr.GetNodes("nature_attribute_expression", DefaultLookupDepth, 0).First().Text)));
+                .GetNodes("nature_attribute", DefaultLookupDepth)
+                .Where(n => n.GetNodes("nature_attribute_identifier", DefaultLookupDepth).First().Text() == "access")
+                .Select(attr => attr.GetNodes("nature_attribute_expression", DefaultLookupDepth).First().Text())));
 
 
-            Parsers.discipline_declaration.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>("source_text", "discipline_identifier", (obj, scope) => obj.GetValue<SyntaxNode>().GetNodes("discipline_identifier", DefaultLookupDepth, 0).Select(node => node.Text)));
+            Parsers.discipline_declaration.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>("source_text", "discipline_identifier", (obj, scope) => obj.GetValue<SyntaxNode>().GetNodes("discipline_identifier", DefaultLookupDepth).Select(node => node.Text())));
 
-            Parsers.module_declaration.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>("source_text", "module_identifier", (obj, scope) => obj.GetValue<SyntaxNode>().GetNodes("module_identifier", DefaultLookupDepth, 0).Select(node => node.Text)));
+            Parsers.module_declaration.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>("source_text", "module_identifier", (obj, scope) => obj.GetValue<SyntaxNode>().GetNodes("module_identifier", DefaultLookupDepth).Select(node => node.Text())));
 
 
-            Parsers.paramset_declaration.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>("source_text", "paramset_identifier", (obj, scope) => obj.GetValue<SyntaxNode>().GetNodes("paramset_identifier", DefaultLookupDepth, 0).Select(node => node.Text)));
+            Parsers.paramset_declaration.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>("source_text", "paramset_identifier", (obj, scope) => obj.GetValue<SyntaxNode>().GetNodes("paramset_identifier", DefaultLookupDepth).Select(node => node.Text())));
 
-            Parsers.udp_declaration.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>("module_declaration", "udp_identifier", (obj, scope) => obj.GetValue<SyntaxNode>().GetNodes("udp_identifier", DefaultLookupDepth, 0).Select(node => node.Text)));
+            Parsers.udp_declaration.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>("module_declaration", "udp_identifier", (obj, scope) => obj.GetValue<SyntaxNode>().GetNodes("udp_identifier", DefaultLookupDepth).Select(node => node.Text())));
 
-            Parsers.input_declaration.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>(new string[] { "analog_function_declaration", "module_declaration" }, "input_port", (obj, scope) => obj.GetValue<SyntaxNode>().GetNodes("port_identifier", DefaultLookupDepth, 0).Select(node => node.Text)));
-            Parsers.output_declaration.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>(new string[] { "analog_function_declaration", "module_declaration" }, "output_port", (obj, scope) => obj.GetValue<SyntaxNode>().GetNodes("port_identifier", DefaultLookupDepth, 0).Select(node => node.Text)));
+            Parsers.input_declaration.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>(new string[] { "analog_function_declaration", "module_declaration" }, "input_port", (obj, scope) => obj.GetValue<SyntaxNode>().GetNodes("port_identifier", DefaultLookupDepth).Select(node => node.Text())));
+            Parsers.output_declaration.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>(new string[] { "analog_function_declaration", "module_declaration" }, "output_port", (obj, scope) => obj.GetValue<SyntaxNode>().GetNodes("port_identifier", DefaultLookupDepth).Select(node => node.Text())));
 
-            Parsers.input_declaration.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>(new string[] { "analog_function_declaration", "module_declaration" }, "net_identifier", (obj, scope) => obj.GetValue<SyntaxNode>().GetNodes("port_identifier", DefaultLookupDepth, 0).Select(node => node.Text)));
-            Parsers.output_declaration.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>(new string[] { "analog_function_declaration", "module_declaration" }, "net_identifier", (obj, scope) => obj.GetValue<SyntaxNode>().GetNodes("port_identifier", DefaultLookupDepth, 0).Select(node => node.Text)));
+            Parsers.input_declaration.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>(new string[] { "analog_function_declaration", "module_declaration" }, "net_identifier", (obj, scope) => obj.GetValue<SyntaxNode>().GetNodes("port_identifier", DefaultLookupDepth).Select(node => node.Text())));
+            Parsers.output_declaration.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>(new string[] { "analog_function_declaration", "module_declaration" }, "net_identifier", (obj, scope) => obj.GetValue<SyntaxNode>().GetNodes("port_identifier", DefaultLookupDepth).Select(node => node.Text())));
 
-            Parsers.net_declaration.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>("module_declaration", "net_identifier", (obj, scope) => obj.GetValue<SyntaxNode>().GetNodes("ams_net_identifier", DefaultLookupDepth, 0).Select(node => node.Text)));
-            Parsers.net_declaration.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>("module_declaration", "net_identifier", (obj, scope) => obj.GetValue<SyntaxNode>().GetNodes("hierarchical_net_identifier", DefaultLookupDepth, 0).Select(node => node.Text)));
+            Parsers.net_declaration.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>("module_declaration", "net_identifier", (obj, scope) => obj.GetValue<SyntaxNode>().GetNodes("ams_net_identifier", DefaultLookupDepth).Select(node => node.Text())));
+            Parsers.net_declaration.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>("module_declaration", "net_identifier", (obj, scope) => obj.GetValue<SyntaxNode>().GetNodes("hierarchical_net_identifier", DefaultLookupDepth).Select(node => node.Text())));
 
-            Parsers.genvar_declaration.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>("module_declaration", "genvar_identifier", (obj, scope) => obj.GetValue<SyntaxNode>().GetNodes("genvar_identifier", DefaultLookupDepth, 0).Select(node => node.Text)));
-            Parsers.parameter_declaration.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>(new string[] { "paramset_declaration", "module_declaration" }, "parameter_identifier", (obj, scope) => obj.GetValue<SyntaxNode>().GetNodes("parameter_identifier", DefaultLookupDepth, 0).Select(node => node.Text)));
+            Parsers.genvar_declaration.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>("module_declaration", "genvar_identifier", (obj, scope) => obj.GetValue<SyntaxNode>().GetNodes("genvar_identifier", DefaultLookupDepth).Select(node => node.Text())));
+            Parsers.parameter_declaration.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>(new string[] { "paramset_declaration", "module_declaration" }, "parameter_identifier", (obj, scope) => obj.GetValue<SyntaxNode>().GetNodes("parameter_identifier", DefaultLookupDepth).Select(node => node.Text())));
 
-            Parsers.specparam_declaration.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>(new string[] { "module_declaration" }, "specparam_identifier", (obj, scope) => obj.GetValue<SyntaxNode>().GetNodes("specparam_identifier", DefaultLookupDepth, 0).Select(node => node.Text)));
+            Parsers.specparam_declaration.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>(new string[] { "module_declaration" }, "specparam_identifier", (obj, scope) => obj.GetValue<SyntaxNode>().GetNodes("specparam_identifier", DefaultLookupDepth).Select(node => node.Text())));
 
-            Parsers.aliasparam_declaration.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>(new string[] { "source_text" }, "parameter_identifier", (obj, scope) => obj.GetValue<SyntaxNode>().GetNodes("parameter_identifier", DefaultLookupDepth, 0).Select(node => node.Text)));
-            Parsers.local_parameter_declaration.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>(new string[] { "module_declaration" }, "local_parameter_identifier", (obj, scope) => obj.GetValue<SyntaxNode>().GetNodes("parameter_identifier", DefaultLookupDepth, 0).Select(node => node.Text)));
+            Parsers.aliasparam_declaration.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>(new string[] { "source_text" }, "parameter_identifier", (obj, scope) => obj.GetValue<SyntaxNode>().GetNodes("parameter_identifier", DefaultLookupDepth).Select(node => node.Text())));
+            Parsers.local_parameter_declaration.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>(new string[] { "module_declaration" }, "local_parameter_identifier", (obj, scope) => obj.GetValue<SyntaxNode>().GetNodes("parameter_identifier", DefaultLookupDepth).Select(node => node.Text())));
 
-            Parsers.reg_declaration.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>("module_declaration", "reg_identifier", (obj, scope) => obj.GetValue<SyntaxNode>().GetNodes("variable_identifier", DefaultLookupDepth, 0).Select(node => node.Text)));
+            Parsers.reg_declaration.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>("module_declaration", "reg_identifier", (obj, scope) => obj.GetValue<SyntaxNode>().GetNodes("variable_identifier", DefaultLookupDepth).Select(node => node.Text())));
 
-            Parsers.analog_seq_block.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>("module_declaration", "block_identifier", (obj, scope) => obj.GetValue<SyntaxNode>().GetNodes("analog_block_identifier", 5, 0).Select(node => node.Text)));
-            Parsers.analog_event_seq_block.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>("module_declaration", "block_identifier", (obj, scope) => obj.GetValue<SyntaxNode>().GetNodes("analog_block_identifier", 5, 0).Select(node => node.Text)));
-            Parsers.analog_function_seq_block.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>("module_declaration", "block_identifier", (obj, scope) => obj.GetValue<SyntaxNode>().GetNodes("analog_block_identifier", 5, 0).Select(node => node.Text)));
+            Parsers.analog_seq_block.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>("module_declaration", "block_identifier", (obj, scope) => obj.GetValue<SyntaxNode>().GetNodes("analog_block_identifier", 5).Select(node => node.Text())));
+            Parsers.analog_event_seq_block.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>("module_declaration", "block_identifier", (obj, scope) => obj.GetValue<SyntaxNode>().GetNodes("analog_block_identifier", 5).Select(node => node.Text())));
+            Parsers.analog_function_seq_block.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>("module_declaration", "block_identifier", (obj, scope) => obj.GetValue<SyntaxNode>().GetNodes("analog_block_identifier", 5).Select(node => node.Text())));
 
-            Parsers.function_declaration.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>("module_declaration", "function_identifier", (obj, scope) => obj.GetValue<SyntaxNode>().GetNodes("function_identifier", DefaultLookupDepth, 0).Take(1).Select(node => node.Text)));
+            Parsers.function_declaration.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>("module_declaration", "function_identifier", (obj, scope) => obj.GetValue<SyntaxNode>().GetNodes("function_identifier", DefaultLookupDepth).Take(1).Select(node => node.Text())));
             Parsers.analog_function_declaration.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>("module_declaration", "analog_function_identifier", (obj, scope) =>
             {
-                var tmp = obj.GetValue<SyntaxNode>().GetNodes("analog_function_identifier", DefaultLookupDepth, 0).Take(1).Select(node => node.Text).ToList();
+                var tmp = obj.GetValue<SyntaxNode>().GetNodes("analog_function_identifier", DefaultLookupDepth).Take(1).Select(node => node.Text()).ToList();
 
                 return tmp;
             }));
             Parsers.analog_function_identifier.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>("module_declaration", "analog_function_identifier", "analog_function_declaration", (obj, scope) =>
             {
-                var cmp = obj.GetValue<SyntaxNode>().GetNodes("analog_function_identifier", DefaultLookupDepth, 0).Take(1).Select(node => node.Text).ToList();
+                var cmp = obj.GetValue<SyntaxNode>().GetNodes("analog_function_identifier", DefaultLookupDepth).Take(1).Select(node => node.Text()).ToList();
 
                 return cmp;
             }, depth: 3));
             Parsers.branch_declaration.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>("module_declaration", "branch_identifier", (obj, scope) =>
             {
-                return obj.GetValue<SyntaxNode>().GetNodes("branch_identifier", DefaultLookupDepth, 0).Select(node => node.Text);
+                return obj.GetValue<SyntaxNode>().GetNodes("branch_identifier", DefaultLookupDepth).Select(node => node.Text());
             }));
 
-            Parsers.variable_type.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>("module_declaration", "variable_identifier", (obj, scope) => obj.GetValue<SyntaxNode>().GetNodes("variable_identifier", DefaultLookupDepth, 0).Select(node => node.Text)));
-            Parsers.real_declaration.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>("module_declaration", "real_identifier", (obj, scope) => obj.GetValue<SyntaxNode>().GetNodes("real_identifier", DefaultLookupDepth, 0).Select(node => node.Text)));
-            Parsers.integer_declaration.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>("module_declaration", "integer_identifier", (obj, scope) => obj.GetValue<SyntaxNode>().GetNodes("variable_identifier", DefaultLookupDepth, 0).Select(node => node.Text)));
-            Parsers.event_declaration.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>("module_declaration", "event_identifier", (obj, scope) => obj.GetValue<SyntaxNode>().GetNodes("event_identifier", DefaultLookupDepth, 0).Select(node => node.Text)));
+            Parsers.variable_type.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>("module_declaration", "variable_identifier", (obj, scope) => obj.GetValue<SyntaxNode>().GetNodes("variable_identifier", DefaultLookupDepth).Select(node => node.Text())));
+            Parsers.real_declaration.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>("module_declaration", "real_identifier", (obj, scope) => obj.GetValue<SyntaxNode>().GetNodes("real_identifier", DefaultLookupDepth).Select(node => node.Text())));
+            Parsers.integer_declaration.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>("module_declaration", "integer_identifier", (obj, scope) => obj.GetValue<SyntaxNode>().GetNodes("variable_identifier", DefaultLookupDepth).Select(node => node.Text())));
+            Parsers.event_declaration.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>("module_declaration", "event_identifier", (obj, scope) => obj.GetValue<SyntaxNode>().GetNodes("event_identifier", DefaultLookupDepth).Select(node => node.Text())));
             Parsers.specparam_identifier.Value.After(VerilogParserActionTypes.Enforce<SyntaxNode>(new[] { "specparam_identifier" }, new[] { "specparam_declaration" }, (obj, scope) => obj.Text()));
 
             Parsers.paramset_identifier.Value.After(VerilogParserActionTypes.Enforce<SyntaxNode>(new[] { "paramset_identifier" }, new[] { "paramset_declaration" }, (obj, scope) => obj.Text()));
