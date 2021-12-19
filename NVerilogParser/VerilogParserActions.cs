@@ -11,7 +11,7 @@ using System.Linq;
 
 namespace NVerilogParser
 {
-    public static class ParseExt
+    public static partial class ParseExt
     {
         public static void After(this IParser<CharToken, SyntaxNode> parser, Action<AfterArgs<CharToken>> action)
         {
@@ -40,7 +40,7 @@ namespace NVerilogParser
 
     public class VerilogParserActions
     {
-        private const int DefaultLookupDepth = 6;
+        private const int DefaultLookupDepth = 7;
 
         public static Dictionary<IParser<CharToken>, List<Action<AfterArgs<CharToken>>>> AfterActions = new Dictionary<IParser<CharToken>, List<Action<AfterArgs<CharToken>>>>();
 
@@ -48,227 +48,11 @@ namespace NVerilogParser
 
         static VerilogParserActions()
         {
-            string[] keywords =
-            {
-                "above",
-                "abs",
-                "absdelay",
-                "absdelta",
-                "abstol",
-                "access",
-                "acos",
-                "acosh",
-                "ac_stim",
-                "aliasparam",
-                "always",
-                "analog",
-                "analysis",
-                "and",
-                "asin",
-                "asinh",
-                "assert",
-                "assign",
-                "atan",
-                "atan2",
-                "atanh",
-                "automatic",
-                "begin",
-                "branch",
-                "buf",
-                "bufif0",
-                "bufif1",
-                "case",
-                "casex",
-                "casez",
-                "ceil",
-                "cell",
-                "cmos",
-                "config",
-                "connect",
-                "connectmodule",
-                "connectrules",
-                "continuous",
-                "cos",
-                "cosh",
-                "cross",
-                "ddt",
-                "ddt_nature",
-                "ddx",
-                "deassign",
-                "default",
-                "defparam",
-                "design",
-                "disable",
-                "discipline",
-                "discrete",
-                "domain",
-                "driver_update",
-                "edge",
-                "else",
-                "end",
-                "endcase",
-                "endconfig",
-                "endconnectrules",
-                "enddiscipline",
-                "endfunction",
-                "endgenerate",
-                "endmodule",
-                "endnature",
-                "endparamset",
-                "endprimitive",
-                "endspecify",
-                "endtable",
-                "endtask",
-                "event",
-                "exclude",
-                "exp",
-                "final_step",
-                "flicker_noise",
-                "floor",
-                "flow",
-                "for",
-                "force",
-                "forever",
-                "fork",
-                "from",
-                "function",
-                "generate",
-                "genvar",
-                "ground",
-                "highz0",
-                "highz1",
-                "hypot",
-                "idt",
-                "idtmod",
-                "idt_nature",
-                "if",
-                "ifnone",
-                "incdir",
-                "include",
-                "inf",
-                "initial",
-                "initial_step",
-                "inout",
-                "input",
-                "instance",
-                "integer",
-                "join",
-                "laplace_nd",
-                "laplace_np",
-                "laplace_zd",
-                "laplace_zp",
-                "large",
-                "last_crossing",
-                "liblist",
-                "library",
-                "limexp",
-                "ln",
-                "localparam",
-                "log",
-                "macromodule",
-                "max",
-                "medium",
-                "merged",
-                "min",
-                "module",
-                "nand",
-                "nature",
-                "negedge",
-                "net_resolution",
-                "nmos",
-                "noise_table",
-                "noise_table_log",
-                "nor",
-                "noshowcancelled",
-                "not",
-                "notif0",
-                "notif1",
-                "or",
-                "output",
-                "parameter",
-                "paramset",
-                "pmos",
-                "posedge",
-                "potential",
-                "pow",
-                "primitive",
-                "pull0",
-                "pull1",
-                "pulldown",
-                "pullup",
-                "pulsestyle_onevent",
-                "pulsestyle_ondetect",
-                "rcmos",
-                "real",
-                "realtime",
-                "reg",
-                "release",
-                "repeat",
-                "resolveto",
-                "rnmos",
-                "rpmos",
-                "rtran",
-                "rtranif0",
-                "rtranif1",
-                "scalared",
-                "sin",
-                "sinh",
-                "showcancelled",
-                "signed",
-                "slew",
-                "small",
-                "specify",
-                "specparam",
-                "split",
-                "sqrt",
-                "string",
-                "strong0",
-                "strong1",
-                "supply0",
-                "supply1",
-                "table",
-                "tan",
-                "tanh",
-                "task",
-                "time",
-                "timer",
-                "tran",
-                "tranif0",
-                "tranif1",
-                "transition",
-                "tri",
-                "tri0",
-                "tri1",
-                "triand",
-                "trior",
-                "trireg",
-                "units",
-                "unsigned",
-                "use",
-                "uwire",
-                "vectored",
-                "wait",
-                "wand",
-                "weak0",
-                "weak1",
-                "while",
-                "white_noise",
-                "wire",
-                "wor",
-                "wreal",
-                "xnor",
-                "xor",
-                "zi_nd",
-                "zi_np",
-                "zi_zd",
-                "zi_zp"
-            };
-
             string[] kernel_parameters = { "$vt" };
 
             string[] buildInFunctions = { "exp", "ln", "abs", "sqrt", "analysis", "$mfactor" };
 
-            CreateContraints(keywords, kernel_parameters, buildInFunctions);
+            CreateContraints(VerilogKeywords.Values, kernel_parameters, buildInFunctions);
 
             CreateScopes();
 
@@ -279,13 +63,13 @@ namespace NVerilogParser
             // Modules
             Parsers.module_declaration.Value.Before((args) =>
             {
-                var state = (VerilogParserState)args.GlobalState;
+                var state =(VerilogParserState<CharToken>)args.GlobalState;
                 state.VerilogSymbolTable.PushScope(ScopeType.Module, null, args.Input.Position, null);
             });
 
             Parsers.module_identifier.Value.After((args) =>
             {
-                var state = (VerilogParserState)args.GlobalState;
+                var state =(VerilogParserState<CharToken>)args.GlobalState;
                 if (args.ParserResult.WasSuccessful && args.ParserCallStack.HasParser("module_declaration", 10))
                 {
                     state.VerilogSymbolTable.UpdateScopeName(ScopeType.Module, args.ParserResult.Values[0].Text());
@@ -294,7 +78,7 @@ namespace NVerilogParser
 
             Parsers.module_declaration.Value.After((args) =>
             {
-                var state = (VerilogParserState)args.GlobalState;
+                var state =(VerilogParserState<CharToken>)args.GlobalState;
                 if (args.ParserResult.WasSuccessful)
                 {
                     state.VerilogSymbolTable.FinishScope(args.ParserResult.Values[0].Position + args.ParserResult.Values[0].ConsumedTokens);
@@ -308,13 +92,13 @@ namespace NVerilogParser
             // Functions
             Parsers.function_declaration.Value.Before((args) =>
             {
-                var state = (VerilogParserState)args.GlobalState;
+                var state =(VerilogParserState<CharToken>)args.GlobalState;
                 state.VerilogSymbolTable.PushScope(ScopeType.Function, null, args.Input.Position, null);
             });
 
             Parsers.function_identifier.Value.After((args) =>
             {
-                var state = (VerilogParserState)args.GlobalState;
+                var state =(VerilogParserState<CharToken>)args.GlobalState;
                 if (args.ParserResult.WasSuccessful && args.ParserCallStack.HasParser("function_declaration", 10))
                 {
                     state.VerilogSymbolTable.UpdateScopeName(ScopeType.Function, args.ParserResult.Values[0].Text());
@@ -323,7 +107,7 @@ namespace NVerilogParser
 
             Parsers.function_declaration.Value.After((args) =>
             {
-                var state = (VerilogParserState)args.GlobalState;
+                var state =(VerilogParserState<CharToken>)args.GlobalState;
                 if (args.ParserResult.WasSuccessful)
                 {
                     state.VerilogSymbolTable.FinishScope(args.ParserResult.Values[0].Position + args.ParserResult.Values[0].ConsumedTokens);
@@ -337,7 +121,7 @@ namespace NVerilogParser
             // Blocks
             Parsers.block_identifier.Value.After((args) =>
             {
-                var state = (VerilogParserState)args.GlobalState;
+                var state =(VerilogParserState<CharToken>)args.GlobalState;
                 if (args.ParserResult.WasSuccessful
                     && (args.ParserCallStack.HasParser("seq_block", 10)
                     || args.ParserCallStack.HasParser("analog_function_seq_block", 10)
@@ -352,12 +136,12 @@ namespace NVerilogParser
             // seq_block
             Parsers.seq_block.Value.Before((args) =>
             {
-                var state = (VerilogParserState)args.GlobalState;
+                var state =(VerilogParserState<CharToken>)args.GlobalState;
                 state.VerilogSymbolTable.PushScope(ScopeType.Block, null, args.Input.Position, null);
             });
             Parsers.seq_block.Value.After((args) =>
             {
-                var state = (VerilogParserState)args.GlobalState;
+                var state =(VerilogParserState<CharToken>)args.GlobalState;
                 if (args.ParserResult.WasSuccessful)
                 {
                     state.VerilogSymbolTable.FinishScope(args.ParserResult.Values[0].Position + args.ParserResult.Values[0].ConsumedTokens);
@@ -370,12 +154,12 @@ namespace NVerilogParser
             // analog_function_seq_block
             Parsers.analog_function_seq_block.Value.Before((args) =>
             {
-                var state = (VerilogParserState)args.GlobalState;
+                var state =(VerilogParserState<CharToken>)args.GlobalState;
                 state.VerilogSymbolTable.PushScope(ScopeType.Block, null, args.Input.Position, null);
             });
             Parsers.analog_function_seq_block.Value.After((args) =>
             {
-                var state = (VerilogParserState)args.GlobalState;
+                var state =(VerilogParserState<CharToken>)args.GlobalState;
                 if (args.ParserResult.WasSuccessful)
                 {
                     state.VerilogSymbolTable.FinishScope(args.ParserResult.Values[0].Position + args.ParserResult.Values[0].ConsumedTokens);
@@ -389,12 +173,12 @@ namespace NVerilogParser
             // analog_event_seq_block
             Parsers.analog_event_seq_block.Value.Before((args) =>
             {
-                var state = (VerilogParserState)args.GlobalState;
+                var state =(VerilogParserState<CharToken>)args.GlobalState;
                 state.VerilogSymbolTable.PushScope(ScopeType.Block, null, args.Input.Position, null);
             });
             Parsers.analog_event_seq_block.Value.After((args) =>
             {
-                var state = (VerilogParserState)args.GlobalState;
+                var state =(VerilogParserState<CharToken>)args.GlobalState;
                 if (args.ParserResult.WasSuccessful)
                 {
                     state.VerilogSymbolTable.FinishScope(args.ParserResult.Values[0].Position + args.ParserResult.Values[0].ConsumedTokens);
@@ -407,12 +191,12 @@ namespace NVerilogParser
             // analog_seq_block
             Parsers.analog_seq_block.Value.Before((args) =>
             {
-                var state = (VerilogParserState)args.GlobalState;
+                var state =(VerilogParserState<CharToken>)args.GlobalState;
                 state.VerilogSymbolTable.PushScope(ScopeType.Block, null, args.Input.Position, null);
             });
             Parsers.analog_seq_block.Value.After((args) =>
             {
-                var state = (VerilogParserState)args.GlobalState;
+                var state =(VerilogParserState<CharToken>)args.GlobalState;
                 if (args.ParserResult.WasSuccessful)
                 {
                     state.VerilogSymbolTable.FinishScope(args.ParserResult.Values[0].Position + args.ParserResult.Values[0].ConsumedTokens);
@@ -425,12 +209,12 @@ namespace NVerilogParser
             // analog_seq_block
             Parsers.par_block.Value.Before((args) =>
             {
-                var state = (VerilogParserState)args.GlobalState;
+                var state =(VerilogParserState<CharToken>)args.GlobalState;
                 state.VerilogSymbolTable.PushScope(ScopeType.Block, null, args.Input.Position, null);
             });
             Parsers.par_block.Value.After((args) =>
             {
-                var state = (VerilogParserState)args.GlobalState;
+                var state =(VerilogParserState<CharToken>)args.GlobalState;
                 if (args.ParserResult.WasSuccessful)
                 {
                     state.VerilogSymbolTable.FinishScope(args.ParserResult.Values[0].Position + args.ParserResult.Values[0].ConsumedTokens);

@@ -1,6 +1,7 @@
+using CFGToolkit.ParserCombinator;
 using CFGToolkit.ParserCombinator.Input;
-using CFGToolkit.ParserCombinator.Values;
 using NPreprocessor.Macros;
+using NVerilogParser.Lexer;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -30,9 +31,9 @@ namespace NVerilogParser.Tests
 
             var timeout = 1000 * 60 * 10;
 
-            IUnionResult<CharToken> results = null;
+            IUnionResult<VerilogToken> results = null;
 
-            var task = new Task(() => { results = parser.TryParse(txt); });
+            var task = new Task(() => { results = parser.TryTokenParse(txt); });
             task.Start();
             var result = Task.WaitAll(new[] { task }, timeout);
             Assert.True(result, txt);
@@ -40,10 +41,8 @@ namespace NVerilogParser.Tests
             var state = results.GlobalState;
             if (!results.WasSuccessful)
             {
-                var raw = string.Join(string.Empty, results.Input.Source.Select(s => s.Value));
-
                 var nonConsumed = results.Input.Source.Skip(state.LastConsumedPosition + 1);
-                string ctxt = string.Join(string.Empty, nonConsumed.Select(s => s.Value));
+                string ctxt = string.Join(" ", nonConsumed.Select(s => s.Lexem));
                 Assert.True(false, ctxt + "\r\n==\r\n" + txt);
             }
 

@@ -31,7 +31,7 @@ namespace NVerilogParser.Lexer
                     for (var i = 0; i < line.Length; i++)
                     {
                         int index = i + position++;
-                        tokens.Add(new CharToken() { StartIndex = index, EndIndex = index, Value = line[i] });
+                        tokens.Add(new CharToken() { Position = index, Value = line[i] });
                     }
                 }
 

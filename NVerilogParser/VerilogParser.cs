@@ -1,8 +1,8 @@
 ﻿using CFGToolkit.AST;
 using CFGToolkit.ParserCombinator;
 using CFGToolkit.ParserCombinator.Input;
-using CFGToolkit.ParserCombinator.Values;
 using CFGToolkit.Parsers.VerilogAMS;
+using NVerilogParser.Lexer;
 using System.Text.RegularExpressions;
 
 namespace NVerilogParser
@@ -14,6 +14,11 @@ namespace NVerilogParser
             return TryParse(Parsers.source_text.Value.End(), txt);
         }
 
+        public IUnionResult<VerilogToken> TryTokenParse(string txt)
+        {
+            return TryParse(TokenParsers.source_text.Value.End(), txt);
+        }
+
         public IUnionResult<CharToken> TryParse(IParser<CharToken, SyntaxNode> parser, string txt)
         {
             var preprocessor = new Preprocessor.Preprocessor();
@@ -22,13 +27,31 @@ namespace NVerilogParser
             var lexer = new Lexer.CharLexer();
             var tokens = lexer.GetTokens(prepResult.Text);
 
-            var state = new VerilogParserState();
+            var state = new VerilogParserState<CharToken>();
             state.BeforeParseActions = VerilogParserActions.BeforeActions;
             state.AfterParseActions = VerilogParserActions.AfterActions;
 
             HackOrderOfDefinitions(state.VerilogSymbolTable, prepResult.Text);
 
             var result = parser.TryParse(tokens, state);
+            return result;
+        }
+
+        public IUnionResult<NVerilogParser.Lexer.VerilogToken> TryParse(IParser<NVerilogParser.Lexer.VerilogToken, SyntaxNode> parser, string txt)
+        {
+            var preprocessor = new Preprocessor.Preprocessor();
+            var prepResult = preprocessor.DoPreprocessing(txt);
+
+            var tokenLexer = new Lexer.VerilogTokenLexer();
+            var tokenss = tokenLexer.GetTokens(prepResult.Text);
+
+            var state = new VerilogParserState<NVerilogParser.Lexer.VerilogToken>();
+            state.BeforeParseActions = VerilogTokenParserActions.BeforeActions;
+            state.AfterParseActions = VerilogTokenParserActions.AfterActions;
+
+            HackOrderOfDefinitions(state.VerilogSymbolTable, prepResult.Text);
+
+            var result = parser.TryParse(tokenss, state);
             return result;
         }
 

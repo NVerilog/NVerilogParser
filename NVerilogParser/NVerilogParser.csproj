@@ -19,7 +19,8 @@
 
   <ItemGroup>
     <PackageReference Include="CFGToolkit.AST" Version="1.0.0-beta" />
-    <PackageReference Include="CFGToolkit.ParserCombinator" Version="1.0.0-alpha-6" />
+    <PackageReference Include="CFGToolkit.Lexer" Version="1.0.0-alfa-2" />
+    <PackageReference Include="CFGToolkit.ParserCombinator" Version="1.0.0-alpha-8" />
     <PackageReference Include="NPreprocessor" Version="1.0.0-alpha-11" />
   </ItemGroup>
 

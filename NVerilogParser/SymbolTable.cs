@@ -38,12 +38,7 @@ namespace NVerilogParser
 
         public void UpdateScopeName(ScopeType type, string name)
         {
-            var last = _scopes.Last();
-            if (last.Type != type)
-            {
-                throw new Exception();
-            }
-
+            var last = _scopes.Last(s => s.Type == type);
             last.Name = name;
         }
 

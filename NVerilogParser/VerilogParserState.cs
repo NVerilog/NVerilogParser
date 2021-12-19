@@ -3,7 +3,7 @@ using CFGToolkit.ParserCombinator.State;
 
 namespace NVerilogParser
 {
-    public class VerilogParserState : GlobalState<CharToken>
+    public class VerilogParserState<TToken> : GlobalState<TToken> where TToken : IToken
     {
         public SymbolTable VerilogSymbolTable { get; } = new SymbolTable();
     }
