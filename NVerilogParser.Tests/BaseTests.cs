@@ -24,16 +24,14 @@ namespace NVerilogParser.Tests
 
         protected void Check(string testPath)
         {
-            IncludeMacro.Provider = (f) => GetTextFromFile(IncludePath, f);
-
-            var parser = new VerilogParser();
+            var parser = new VerilogParser((fileName) => GetTextFromFile(IncludePath, fileName));
             string txt = Prefix + GetTextFromFile(BasePath, testPath);
 
             var timeout = 1000 * 60 * 10;
 
-            IUnionResult<VerilogToken> results = null;
+            IUnionResult<CharToken> results = null;
 
-            var task = new Task(() => { results = parser.TryTokenParse(txt); });
+            var task = new Task(() => { results = parser.TryParse(txt); });
             task.Start();
             var result = Task.WaitAll(new[] { task }, timeout);
             Assert.True(result, txt);
@@ -42,7 +40,7 @@ namespace NVerilogParser.Tests
             if (!results.WasSuccessful)
             {
                 var nonConsumed = results.Input.Source.Skip(state.LastConsumedPosition + 1);
-                string ctxt = string.Join(" ", nonConsumed.Select(s => s.Lexem));
+                string ctxt = string.Join("", nonConsumed.Select(s => s.Value));
                 Assert.True(false, ctxt + "\r\n==\r\n" + txt);
             }
 

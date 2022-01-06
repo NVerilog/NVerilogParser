@@ -3,12 +3,20 @@ using CFGToolkit.ParserCombinator;
 using CFGToolkit.ParserCombinator.Input;
 using CFGToolkit.Parsers.VerilogAMS;
 using NVerilogParser.Lexer;
+using System;
 using System.Text.RegularExpressions;
 
 namespace NVerilogParser
 {
     public class VerilogParser
     {
+        public Preprocessor.Preprocessor Preprocessor { get; }
+
+        public VerilogParser(Func<string, string> fileProvider = null)
+        {
+            Preprocessor = new Preprocessor.Preprocessor(fileProvider);
+        }
+
         public IUnionResult<CharToken> TryParse(string txt)
         {
             return TryParse(Parsers.source_text.Value.End(), txt);
@@ -21,8 +29,7 @@ namespace NVerilogParser
 
         public IUnionResult<CharToken> TryParse(IParser<CharToken, SyntaxNode> parser, string txt)
         {
-            var preprocessor = new Preprocessor.Preprocessor();
-            var prepResult = preprocessor.DoPreprocessing(txt);
+            var prepResult = Preprocessor.DoPreprocessing(txt);
 
             var lexer = new Lexer.CharLexer();
             var tokens = lexer.GetTokens(prepResult.Text);
@@ -39,8 +46,7 @@ namespace NVerilogParser
 
         public IUnionResult<NVerilogParser.Lexer.VerilogToken> TryParse(IParser<NVerilogParser.Lexer.VerilogToken, SyntaxNode> parser, string txt)
         {
-            var preprocessor = new Preprocessor.Preprocessor();
-            var prepResult = preprocessor.DoPreprocessing(txt);
+            var prepResult = Preprocessor.DoPreprocessing(txt);
 
             var tokenLexer = new Lexer.VerilogTokenLexer();
             var tokenss = tokenLexer.GetTokens(prepResult.Text);
