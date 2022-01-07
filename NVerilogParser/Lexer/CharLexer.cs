@@ -18,8 +18,10 @@ namespace NVerilogParser.Lexer
             int position = 0;
             var tokens = new List<CharToken>();
             txtReader.MoveNext();
+            int lineNumber = 0;
             while (txtReader.Current != null)
             {
+                lineNumber++;
                 line = txtReader.Current.Remainder;
 
                 if (line.StartsWith('`'))
@@ -31,7 +33,7 @@ namespace NVerilogParser.Lexer
                     for (var i = 0; i < line.Length; i++)
                     {
                         int index = i + position++;
-                        tokens.Add(new CharToken() { Position = index, Value = line[i] });
+                        tokens.Add(new CharToken() { Position = index, Value = line[i], Line = lineNumber });
                     }
                 }
 
