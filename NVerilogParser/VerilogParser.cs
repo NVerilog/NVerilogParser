@@ -5,6 +5,7 @@ using CFGToolkit.Parsers.VerilogAMS;
 using NVerilogParser.Lexer;
 using System;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace NVerilogParser
 {
@@ -12,24 +13,24 @@ namespace NVerilogParser
     {
         public Preprocessor.Preprocessor Preprocessor { get; }
 
-        public VerilogParser(Func<string, string> fileProvider = null)
+        public VerilogParser(Func<string, Task<string>> fileProvider = null)
         {
             Preprocessor = new Preprocessor.Preprocessor(fileProvider);
         }
 
-        public IUnionResult<CharToken> TryParse(string txt)
+        public Task<IUnionResult<CharToken>> TryParse(string txt)
         {
             return TryParse(Parsers.source_text.Value.End(), txt);
         }
 
-        public IUnionResult<VerilogToken> TryTokenParse(string txt)
+        public Task<IUnionResult<VerilogToken>> TryTokenParse(string txt)
         {
             return TryParse(TokenParsers.source_text.Value.End(), txt);
         }
 
-        public IUnionResult<CharToken> TryParse(IParser<CharToken, SyntaxNode> parser, string txt)
+        public async Task<IUnionResult<CharToken>> TryParse(IParser<CharToken, SyntaxNode> parser, string txt)
         {
-            var prepResult = Preprocessor.DoPreprocessing(txt);
+            var prepResult = await Preprocessor.DoPreprocessing(txt);
 
             var lexer = new Lexer.CharLexer();
             var tokens = lexer.GetTokens(prepResult.Text);
@@ -44,9 +45,9 @@ namespace NVerilogParser
             return result;
         }
 
-        public IUnionResult<NVerilogParser.Lexer.VerilogToken> TryParse(IParser<NVerilogParser.Lexer.VerilogToken, SyntaxNode> parser, string txt)
+        public async Task<IUnionResult<NVerilogParser.Lexer.VerilogToken>> TryParse(IParser<NVerilogParser.Lexer.VerilogToken, SyntaxNode> parser, string txt)
         {
-            var prepResult = Preprocessor.DoPreprocessing(txt);
+            var prepResult = await Preprocessor.DoPreprocessing(txt);
 
             var tokenLexer = new Lexer.VerilogTokenLexer();
             var tokenss = tokenLexer.GetTokens(prepResult.Text);

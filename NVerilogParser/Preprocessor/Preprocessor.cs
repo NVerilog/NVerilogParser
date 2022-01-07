@@ -3,12 +3,13 @@ using NPreprocessor.Macros;
 using NPreprocessor.Macros.Derivations;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace NVerilogParser.Preprocessor
 {
     public partial class Preprocessor
     {
-        public Preprocessor(Func<string, string> fileProvider = null)
+        public Preprocessor(Func<string, Task<string>> fileProvider = null)
         {
             var macroResolver = MacroResolverFactory.CreateDefault(true, Environment.NewLine);
             macroResolver.Macros.Add(new ExpandedIfDefMacro("`ifdef", "`else", "`endif"));
@@ -26,12 +27,12 @@ namespace NVerilogParser.Preprocessor
 
         public IMacroResolver MacroResolver { get; private set; }
 
-        public PreprocessorResult DoPreprocessing(string input)
+        public async Task<PreprocessorResult> DoPreprocessing(string input)
         {
             var txtReader = new TextReader(input, Environment.NewLine);
 
             var state = new State { DefinitionPrefix = "`" };
-            var result = MacroResolver.Resolve(txtReader, state);
+            var result = await MacroResolver.Resolve(txtReader, state);
 
             return new PreprocessorResult()
             {

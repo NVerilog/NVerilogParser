@@ -24,14 +24,14 @@ namespace NVerilogParser.Tests
 
         protected void Check(string testPath)
         {
-            var parser = new VerilogParser((fileName) => GetTextFromFile(IncludePath, fileName));
+            var parser = new VerilogParser((fileName) => Task.FromResult(GetTextFromFile(IncludePath, fileName)));
             string txt = Prefix + GetTextFromFile(BasePath, testPath);
 
             var timeout = 1000 * 60 * 10;
 
             IUnionResult<CharToken> results = null;
 
-            var task = new Task(() => { results = parser.TryParse(txt); });
+            var task = new Task(async () => { results = await parser.TryParse(txt); });
             task.Start();
             var result = Task.WaitAll(new[] { task }, timeout);
             Assert.True(result, txt);

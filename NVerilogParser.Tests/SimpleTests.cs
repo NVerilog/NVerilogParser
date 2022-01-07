@@ -7,10 +7,10 @@ namespace NVerilogParser.Tests
     public class SimpleTests
     {
         [Fact]
-        public void ModuleGates()
+        public async void ModuleGates()
         {
             var parser = new VerilogParser();
-            var results = parser.TryParse(@"module m1 (d); 
+            var results = await parser.TryParse(@"module m1 (d); 
 input d;
 wire n1;
 
@@ -23,10 +23,10 @@ endmodule");
         }
 
         [Fact]
-        public void ModuleGates2()
+        public async void ModuleGates2()
         {
             var parser = new VerilogParser();
-            var results = parser.TryParse(Parsers.n_output_gate_instance.Value, @"(n1,d);");
+            var results = await parser.TryParse(Parsers.n_output_gate_instance.Value, @"(n1,d);");
             Assert.True(results.WasSuccessful);
             Assert.True(results.Values.Count == 1);
             Assert.False(results.Values[0].EmptyMatch);
@@ -34,10 +34,10 @@ endmodule");
 
 
         [Fact]
-        public void Module1()
+        public async void Module1()
         {
             var parser = new VerilogParser();
-            var results = parser.TryParse("module m1 (input aa1, output cc2) ; endmodule");
+            var results = await parser.TryParse("module m1 (input aa1, output cc2) ; endmodule");
             Assert.True(results.WasSuccessful);
             Assert.True(results.Values.Count == 1);
             Assert.False(results.Values[0].EmptyMatch);
@@ -45,22 +45,10 @@ endmodule");
 
 
         [Fact]
-        public void Conditional()
+        public async void Conditional()
         {
             var parser = new VerilogParser();
-            var results = parser.TryParse(Parsers.analog_conditional_expression.Value.Token().End(), "1 ? 3 : 4 ");
-
-            Assert.True(results.WasSuccessful);
-            Assert.True(results.Values.Count == 1);
-            Assert.False(results.Values[0].EmptyMatch);
-        }
-
-
-        [Fact]
-        public void Conditional2()
-        {
-            var parser = new VerilogParser();
-            var results = parser.TryParse(Parsers.constant_conditional_expression.Value.Token().End(), "1 ? 3 : 4 ");
+            var results = await parser.TryParse(Parsers.analog_conditional_expression.Value.Token().End(), "1 ? 3 : 4 ");
 
             Assert.True(results.WasSuccessful);
             Assert.True(results.Values.Count == 1);
@@ -69,30 +57,42 @@ endmodule");
 
 
         [Fact]
-        public void Module2()
+        public async void Conditional2()
         {
             var parser = new VerilogParser();
-            var results = parser.TryParse("module m1 ; endmodule");
+            var results = await parser.TryParse(Parsers.constant_conditional_expression.Value.Token().End(), "1 ? 3 : 4 ");
+
+            Assert.True(results.WasSuccessful);
+            Assert.True(results.Values.Count == 1);
+            Assert.False(results.Values[0].EmptyMatch);
+        }
+
+
+        [Fact]
+        public async void Module2()
+        {
+            var parser = new VerilogParser();
+            var results = await parser.TryParse("module m1 ; endmodule");
             Assert.True(results.WasSuccessful);
             Assert.True(results.Values.Count == 1);
             Assert.False(results.Values[0].EmptyMatch);
         }
 
         [Fact]
-        public void Module3()
+        public async void Module3()
         {
             var parser = new VerilogParser();
-            var results = parser.TryParse("module m1 () ; endmodule");
+            var results = await parser.TryParse("module m1 () ; endmodule");
             Assert.True(results.WasSuccessful);
             Assert.True(results.Values.Count == 1);
             Assert.False(results.Values[0].EmptyMatch);
         }
 
         [Fact]
-        public void Module4()
+        public async void Module4()
         {
             var parser = new VerilogParser();
-            var results = parser.TryParse("module m1 (a, b, cd, ef) ; endmodule");
+            var results = await parser.TryParse("module m1 (a, b, cd, ef) ; endmodule");
             Assert.True(results.WasSuccessful);
             Assert.True(results.Values.Count == 1);
             Assert.False(results.Values[0].EmptyMatch);
@@ -108,11 +108,11 @@ endmodule");
         }
 
         [Fact]
-        public void ListOfPortDeclarations()
+        public async void ListOfPortDeclarations()
         {
             var parser = new VerilogParser();
 
-            var results = parser.TryParse(Parsers.list_of_port_declarations.Value, "(input a, output b)");
+            var results = await parser.TryParse(Parsers.list_of_port_declarations.Value, "(input a, output b)");
             Assert.True(results.WasSuccessful);
             Assert.True(results.Values.Count == 1);
             Assert.False(results.Values[0].EmptyMatch);
@@ -137,20 +137,20 @@ endmodule");
         }
 
         [Fact]
-        public void BinaryParameter()
+        public async void BinaryParameter()
         {
             var parser = new VerilogParser();
-            var results = parser.TryParse("module m1 ; parameter x = 16'b0000_1111_1010_0101;  endmodule");
+            var results = await parser.TryParse("module m1 ; parameter x = 16'b0000_1111_1010_0101;  endmodule");
             Assert.True(results.WasSuccessful);
             Assert.True(results.Values.Count == 1);
             Assert.False(results.Values[0].EmptyMatch);
         }
 
         [Fact]
-        public void Always()
+        public async void Always()
         {
             var parser = new VerilogParser();
-            var results = parser.TryParse(@"
+            var results = await parser.TryParse(@"
 module initial_always ;
 endmodule
 
@@ -162,10 +162,10 @@ endmodule
         }
 
         [Fact]
-        public void Always2()
+        public async void Always2()
         {
             var parser = new VerilogParser();
-            var results = parser.TryParse(@"
+            var results = await parser.TryParse(@"
 module initial_always ;
 	
     	always @(posedge x or negedge y) begin
@@ -181,10 +181,10 @@ endmodule
         }
 
         [Fact]
-        public void AnalogExpression()
+        public async void AnalogExpression()
         {
             var parser = new VerilogParser();
-            var results = parser.TryParse(
+            var results = await parser.TryParse(
             @" module resistor (a, b); 
 	inout a, b; 
 	parameter real R = 1.0; 
@@ -197,10 +197,10 @@ endmodule ");
         }
 
         [Fact]
-        public void Comments()
+        public async void Comments()
         {
             var parser = new VerilogParser();
-            var results = parser.TryParse(
+            var results = await parser.TryParse(
             @"// 
 // N-bit DAC example. 
 // 
@@ -212,12 +212,12 @@ module dac(out, in, clk);
 endmodule ");
 
             Assert.True(results.WasSuccessful);
-            Assert.Equal(1, results.Values.Count);
+            Assert.Single(results.Values);
             Assert.False(results.Values[0].EmptyMatch);
         }
 
         [Fact]
-        public void If()
+        public async void If()
         {
             var txt = @"module dac(out);
             if (3 == 4)
@@ -230,22 +230,22 @@ endmodule ");
                 end
             endmodule";
             var parser = new VerilogParser();
-            var results = parser.TryParse(txt);
+            var results = await parser.TryParse(txt);
 
             Assert.True(results.WasSuccessful);
-            Assert.Equal(1, results.Values.Count);
+            Assert.Single(results.Values);
             Assert.False(results.Values[0].EmptyMatch);
         }
 
         [Fact]
-        public void ModuleInstance()
+        public async void ModuleInstance()
         {
             var txt = "resistor #(.r(10K)) r1(out,gnd);";
             var parser = new VerilogParser();
-            var results = parser.TryParse(Parsers.module_instantiation.Value.End(), txt);
+            var results = await parser.TryParse(Parsers.module_instantiation.Value.End(), txt);
 
             Assert.True(results.WasSuccessful);
-            Assert.Equal(1, results.Values.Count);
+            Assert.Single(results.Values);
             Assert.False(results.Values[0].EmptyMatch);
         }
 
@@ -254,7 +254,7 @@ endmodule ");
         {
             var results = Parsers.analog_expression.Value.End().TryParse("1 + 3 * 3 + (1 + 4)");
             Assert.True(results.WasSuccessful);
-            Assert.Equal(1, results.Values.Count);
+            Assert.Single(results.Values);
             Assert.False(results.Values[0].EmptyMatch);
         }
     }
