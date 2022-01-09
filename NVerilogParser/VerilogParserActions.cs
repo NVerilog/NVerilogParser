@@ -4,7 +4,6 @@ using CFGToolkit.ParserCombinator;
 using CFGToolkit.ParserCombinator.Input;
 using CFGToolkit.ParserCombinator.Parsers;
 using CFGToolkit.ParserCombinator.Values;
-using CFGToolkit.Parsers.VerilogAMS;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -409,9 +408,12 @@ namespace NVerilogParser
 
             Parsers.binary_operator_6.Value.After((args) =>
             {
-                if (args.Input.Position < args.Input.Source.Count - 1 && args.Input.Source[args.Input.Position + 1].Value == '&')
+                if (args.ParserResult.WasSuccessful)
                 {
-                    args.ParserResult.Values.Clear();
+                    if (args.Input.Position < args.Input.Source.Count - 1 && args.Input.Source[args.Input.Position + 1].Value == '&')
+                    {
+                        args.ParserResult.Values?.Clear();
+                    }
                 }
             });
         }

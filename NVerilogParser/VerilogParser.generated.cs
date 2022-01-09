@@ -3,14 +3,13 @@ using CFGToolkit.ParserCombinator;
 using CFGToolkit.ParserCombinator.Input;
 using CFGToolkit.ParserCombinator.Values;
 using System;
-using System.Collections.Generic;
 
-namespace CFGToolkit.Parsers.VerilogAMS
+namespace NVerilogParser
 {
-    public class Parsers
+    public partial class Parsers
     {
         public static Lazy<IParser<CharToken, SyntaxNode>> source_text =
-          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("source_text#0", (args) => CreateSyntaxNode(true, nameof(source_text), args), new Lazy<IParser<CharToken>>(() => description.Value.Many(greedy: true).Token())).Named("source_text"));
+                  new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("source_text#0", (args) => CreateSyntaxNode(true, nameof(source_text), args), new Lazy<IParser<CharToken>>(() => description.Value.Many(greedy: true).Token())).Named("source_text"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> description =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("description#0", (args) => CreateSyntaxNode(true, nameof(description), args), new Lazy<IParser<CharToken>>(() => module_declaration.Value.Token()))
@@ -120,7 +119,10 @@ namespace CFGToolkit.Parsers.VerilogAMS
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("design_statement#0", (args) => CreateSyntaxNode(true, nameof(design_statement), args), new Lazy<IParser<CharToken>>(() => Parser.String("design", true).Text()), new Lazy<IParser<CharToken>>(() => design_statement_many.Value.Many(greedy: true).Token()), new Lazy<IParser<CharToken>>(() => Parser.Char(';', true))).Named("design_statement"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> design_statement_many =
-          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("design_statement_many#0", (args) => CreateSyntaxNode(true, nameof(design_statement_many), args), new Lazy<IParser<CharToken>>(() => Parser.Regex("[library_identifier.]").Token()), new Lazy<IParser<CharToken>>(() => cell_identifier.Value.Token())).Named("design_statement_many"));
+          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("design_statement_many#0", (args) => CreateSyntaxNode(true, nameof(design_statement_many), args), new Lazy<IParser<CharToken>>(() => design_statement_optional.Value.Optional(greedy: true).Token()), new Lazy<IParser<CharToken>>(() => cell_identifier.Value.Token())).Named("design_statement_many"));
+
+        public static Lazy<IParser<CharToken, SyntaxNode>> design_statement_optional =
+          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("design_statement_optional#0", (args) => CreateSyntaxNode(true, nameof(design_statement_optional), args), new Lazy<IParser<CharToken>>(() => library_identifier.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.Char('.', true))).Named("design_statement_optional"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> config_rule_statement =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("config_rule_statement#0", (args) => CreateSyntaxNode(true, nameof(config_rule_statement), args), new Lazy<IParser<CharToken>>(() => default_clause.Value.Token()), new Lazy<IParser<CharToken>>(() => liblist_clause.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.Char(';', true)))
@@ -151,7 +153,10 @@ namespace CFGToolkit.Parsers.VerilogAMS
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("liblist_clause#0", (args) => CreateSyntaxNode(true, nameof(liblist_clause), args), new Lazy<IParser<CharToken>>(() => Parser.String("liblist", true).Text()), new Lazy<IParser<CharToken>>(() => library_identifier.Value.Many(greedy: true).Token())).Named("liblist_clause"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> use_clause =
-          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("use_clause#0", (args) => CreateSyntaxNode(true, nameof(use_clause), args), new Lazy<IParser<CharToken>>(() => Parser.String("use", true).Text()), new Lazy<IParser<CharToken>>(() => Parser.Regex("[library_identifier.]").Token()), new Lazy<IParser<CharToken>>(() => cell_identifier.Value.Token()), new Lazy<IParser<CharToken>>(() => use_config.Value.Optional(greedy: true).Token())).Named("use_clause"));
+          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("use_clause#0", (args) => CreateSyntaxNode(true, nameof(use_clause), args), new Lazy<IParser<CharToken>>(() => Parser.String("use", true).Text()), new Lazy<IParser<CharToken>>(() => use_clause_optional.Value.Optional(greedy: true).Token()), new Lazy<IParser<CharToken>>(() => cell_identifier.Value.Token()), new Lazy<IParser<CharToken>>(() => use_config.Value.Optional(greedy: true).Token())).Named("use_clause"));
+
+        public static Lazy<IParser<CharToken, SyntaxNode>> use_clause_optional =
+          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("use_clause_optional#0", (args) => CreateSyntaxNode(true, nameof(use_clause_optional), args), new Lazy<IParser<CharToken>>(() => library_identifier.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.Char('.', true))).Named("use_clause_optional"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> use_config =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("use_config#0", (args) => CreateSyntaxNode(false, nameof(use_config), args), new Lazy<IParser<CharToken>>(() => Parser.Char(':', false)), new Lazy<IParser<CharToken>>(() => Parser.String("config", false).Text())).Named("use_config"));
@@ -208,7 +213,7 @@ namespace CFGToolkit.Parsers.VerilogAMS
 
         public static Lazy<IParser<CharToken, SyntaxNode>> connectrules_item =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("connectrules_item#0", (args) => CreateSyntaxNode(true, nameof(connectrules_item), args), new Lazy<IParser<CharToken>>(() => connect_insertion.Value.Token()))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("connectrules_item#1", (args) => CreateSyntaxNode(true, nameof(connectrules_item), args), new Lazy<IParser<CharToken>>(() => connect_resolution.Value.Token()))).Named("connectrules_item"));
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("connectrules_item#1", (args) => CreateSyntaxNode(true, nameof(connectrules_item), args), new Lazy<IParser<CharToken>>(() => connect_resolution.Value.Token()))).Named("connectrules_item"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> connect_insertion =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("connect_insertion#0", (args) => CreateSyntaxNode(true, nameof(connect_insertion), args), new Lazy<IParser<CharToken>>(() => Parser.String("connect", true).Text()), new Lazy<IParser<CharToken>>(() => connectmodule_identifier.Value.Token()), new Lazy<IParser<CharToken>>(() => connect_mode.Value.Optional(greedy: true).Token()), new Lazy<IParser<CharToken>>(() => parameter_value_assignment.Value.Optional(greedy: true).Token()), new Lazy<IParser<CharToken>>(() => connect_port_overrides.Value.Optional(greedy: true).Token()), new Lazy<IParser<CharToken>>(() => Parser.Char(';', true))).Named("connect_insertion"));
@@ -231,7 +236,7 @@ namespace CFGToolkit.Parsers.VerilogAMS
 
         public static Lazy<IParser<CharToken, SyntaxNode>> discipline_identifier_or_exclude =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("discipline_identifier_or_exclude#0", (args) => CreateSyntaxNode(true, nameof(discipline_identifier_or_exclude), args), new Lazy<IParser<CharToken>>(() => discipline_identifier.Value.Token()))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("discipline_identifier_or_exclude#1", (args) => CreateSyntaxNode(true, nameof(discipline_identifier_or_exclude), args), new Lazy<IParser<CharToken>>(() => Parser.String("exclude", true).Text()))).Named("discipline_identifier_or_exclude"));
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("discipline_identifier_or_exclude#1", (args) => CreateSyntaxNode(true, nameof(discipline_identifier_or_exclude), args), new Lazy<IParser<CharToken>>(() => Parser.String("exclude", true).Text()))).Named("discipline_identifier_or_exclude"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> paramset_declaration =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("paramset_declaration#0", (args) => CreateSyntaxNode(true, nameof(paramset_declaration), args), new Lazy<IParser<CharToken>>(() => attribute_instance.Value.Many(greedy: true).Token()), new Lazy<IParser<CharToken>>(() => Parser.String("paramset", true).Text()), new Lazy<IParser<CharToken>>(() => paramset_identifier.Value.Token()), new Lazy<IParser<CharToken>>(() => module_or_paramset_identifier.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.Char(';', true)), new Lazy<IParser<CharToken>>(() => paramset_item_declaration.Value.Token()), new Lazy<IParser<CharToken>>(() => paramset_item_declaration.Value.Many(greedy: true).Token()), new Lazy<IParser<CharToken>>(() => paramset_statement.Value.Token()), new Lazy<IParser<CharToken>>(() => paramset_statement.Value.Many(greedy: true).Token()), new Lazy<IParser<CharToken>>(() => Parser.String("endparamset", true).Text())).Named("paramset_declaration"));
@@ -566,11 +571,11 @@ namespace CFGToolkit.Parsers.VerilogAMS
 
         public static Lazy<IParser<CharToken, SyntaxNode>> param_assignment =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("param_assignment#0", (args) => CreateSyntaxNode(true, nameof(param_assignment), args), new Lazy<IParser<CharToken>>(() => parameter_identifier.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.Char('=', true)), new Lazy<IParser<CharToken>>(() => constant_mintypmax_expression.Value.Token()), new Lazy<IParser<CharToken>>(() => value_range.Value.Many(greedy: true).Token()))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("param_assignment#1", (args) => CreateSyntaxNode(true, nameof(param_assignment), args), new Lazy<IParser<CharToken>>(() => parameter_identifier.Value.Token()), new Lazy<IParser<CharToken>>(() => range.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.Char('=', true)), new Lazy<IParser<CharToken>>(() => constant_arrayinit.Value.Token()), new Lazy<IParser<CharToken>>(() => value_range.Value.Many(greedy: true).Token()))).Named("param_assignment"));
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("param_assignment#1", (args) => CreateSyntaxNode(true, nameof(param_assignment), args), new Lazy<IParser<CharToken>>(() => parameter_identifier.Value.Token()), new Lazy<IParser<CharToken>>(() => range.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.Char('=', true)), new Lazy<IParser<CharToken>>(() => constant_arrayinit.Value.Token()), new Lazy<IParser<CharToken>>(() => value_range.Value.Many(greedy: true).Token()))).Named("param_assignment"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> specparam_assignment =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("specparam_assignment#0", (args) => CreateSyntaxNode(true, nameof(specparam_assignment), args), new Lazy<IParser<CharToken>>(() => specparam_identifier.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.Char('=', true)), new Lazy<IParser<CharToken>>(() => constant_mintypmax_expression.Value.Token()))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("specparam_assignment#1", (args) => CreateSyntaxNode(true, nameof(specparam_assignment), args), new Lazy<IParser<CharToken>>(() => pulse_control_specparam.Value.Token()))).Named("specparam_assignment"));
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("specparam_assignment#1", (args) => CreateSyntaxNode(true, nameof(specparam_assignment), args), new Lazy<IParser<CharToken>>(() => pulse_control_specparam.Value.Token()))).Named("specparam_assignment"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> pulse_control_specparam =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("pulse_control_specparam#0", (args) => CreateSyntaxNode(true, nameof(pulse_control_specparam), args), new Lazy<IParser<CharToken>>(() => Parser.String("PATHPULSE$", true).Text()), new Lazy<IParser<CharToken>>(() => Parser.Char('=', true)), new Lazy<IParser<CharToken>>(() => Parser.Char('(', true)), new Lazy<IParser<CharToken>>(() => reject_limit_value.Value.Token()), new Lazy<IParser<CharToken>>(() => pulse_control_specparam_optional.Value.Optional(greedy: true).Token()), new Lazy<IParser<CharToken>>(() => Parser.Char(')', true)))
@@ -610,7 +615,7 @@ namespace CFGToolkit.Parsers.VerilogAMS
 
         public static Lazy<IParser<CharToken, SyntaxNode>> value_range_type =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("value_range_type#0", (args) => CreateSyntaxNode(true, nameof(value_range_type), args), new Lazy<IParser<CharToken>>(() => Parser.String("from", true).Text()))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("value_range_type#1", (args) => CreateSyntaxNode(true, nameof(value_range_type), args), new Lazy<IParser<CharToken>>(() => Parser.String("exclude", true).Text()))).Named("value_range_type"));
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("value_range_type#1", (args) => CreateSyntaxNode(true, nameof(value_range_type), args), new Lazy<IParser<CharToken>>(() => Parser.String("exclude", true).Text()))).Named("value_range_type"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> value_range_expression =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("value_range_expression#0", (args) => CreateSyntaxNode(true, nameof(value_range_expression), args), new Lazy<IParser<CharToken>>(() => Parser.String("-inf", true).Text()))
@@ -904,7 +909,7 @@ namespace CFGToolkit.Parsers.VerilogAMS
 
         public static Lazy<IParser<CharToken, SyntaxNode>> parameter_value_assignment =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("parameter_value_assignment#0", (args) => CreateSyntaxNode(true, nameof(parameter_value_assignment), args), new Lazy<IParser<CharToken>>(() => Parser.Char('#', true)), new Lazy<IParser<CharToken>>(() => Parser.Char('(', true)), new Lazy<IParser<CharToken>>(() => list_of_parameter_assignments.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.Char(')', true)))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("parameter_value_assignment#1", (args) => CreateSyntaxNode(true, nameof(parameter_value_assignment), args), new Lazy<IParser<CharToken>>(() => Parser.Char('#', true)), new Lazy<IParser<CharToken>>(() => Parser.Char('(', true)), new Lazy<IParser<CharToken>>(() => Parser.Char(')', true)))).Named("parameter_value_assignment"));
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("parameter_value_assignment#1", (args) => CreateSyntaxNode(true, nameof(parameter_value_assignment), args), new Lazy<IParser<CharToken>>(() => Parser.Char('#', true)), new Lazy<IParser<CharToken>>(() => Parser.Char('(', true)), new Lazy<IParser<CharToken>>(() => Parser.Char(')', true)))).Named("parameter_value_assignment"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> list_of_parameter_assignments =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("list_of_parameter_assignments#0", (args) => CreateSyntaxNode(true, nameof(list_of_parameter_assignments), args), new Lazy<IParser<CharToken>>(() => ordered_parameter_assignment.Value.Token()), new Lazy<IParser<CharToken>>(() => list_of_parameter_assignments_many.Value.Many(greedy: true).Token()))
@@ -981,7 +986,7 @@ namespace CFGToolkit.Parsers.VerilogAMS
 
         public static Lazy<IParser<CharToken, SyntaxNode>> conditional_generate_construct =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("conditional_generate_construct#0", (args) => CreateSyntaxNode(true, nameof(conditional_generate_construct), args), new Lazy<IParser<CharToken>>(() => if_generate_construct.Value.Token()))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("conditional_generate_construct#1", (args) => CreateSyntaxNode(true, nameof(conditional_generate_construct), args), new Lazy<IParser<CharToken>>(() => case_generate_construct.Value.Token()))).Named("conditional_generate_construct"));
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("conditional_generate_construct#1", (args) => CreateSyntaxNode(true, nameof(conditional_generate_construct), args), new Lazy<IParser<CharToken>>(() => case_generate_construct.Value.Token()))).Named("conditional_generate_construct"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> if_generate_construct =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("if_generate_construct#0", (args) => CreateSyntaxNode(true, nameof(if_generate_construct), args), new Lazy<IParser<CharToken>>(() => Parser.String("if", true).Text()), new Lazy<IParser<CharToken>>(() => Parser.Char('(', true)), new Lazy<IParser<CharToken>>(() => constant_expression.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.Char(')', true)), new Lazy<IParser<CharToken>>(() => generate_block_or_null.Value.Token()), new Lazy<IParser<CharToken>>(() => if_generate_construct_else.Value.Optional(greedy: true).Token())).Named("if_generate_construct"));
@@ -1097,7 +1102,7 @@ namespace CFGToolkit.Parsers.VerilogAMS
 
         public static Lazy<IParser<CharToken, SyntaxNode>> next_state =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("next_state#0", (args) => CreateSyntaxNode(true, nameof(next_state), args), new Lazy<IParser<CharToken>>(() => output_symbol.Value.Token()))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("next_state#1", (args) => CreateSyntaxNode(true, nameof(next_state), args), new Lazy<IParser<CharToken>>(() => Parser.Char('-', true)))).Named("next_state"));
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("next_state#1", (args) => CreateSyntaxNode(true, nameof(next_state), args), new Lazy<IParser<CharToken>>(() => Parser.Char('-', true)))).Named("next_state"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> output_symbol =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("output_symbol#0", (args) => CreateSyntaxNode(true, nameof(output_symbol), args), new Lazy<IParser<CharToken>>(() => Parser.Char('0', true)))
@@ -1153,8 +1158,8 @@ namespace CFGToolkit.Parsers.VerilogAMS
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("net_assignment#0", (args) => CreateSyntaxNode(true, nameof(net_assignment), args), new Lazy<IParser<CharToken>>(() => net_lvalue.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.Char('=', true)), new Lazy<IParser<CharToken>>(() => expression.Value.Token())).Named("net_assignment"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> analog_construct =
-          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("analog_construct#0", (args) => CreateSyntaxNode(true, nameof(analog_construct), args), new Lazy<IParser<CharToken>>(() => Parser.String("analog", true).Text()), new Lazy<IParser<CharToken>>(() => analog_statement.Value.Token()))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("analog_construct#1", (args) => CreateSyntaxNode(true, nameof(analog_construct), args), new Lazy<IParser<CharToken>>(() => Parser.String("analog", true).Text()), new Lazy<IParser<CharToken>>(() => Parser.String("initial", true).Text()), new Lazy<IParser<CharToken>>(() => analog_function_statement.Value.Token()))).Named("analog_construct"));
+          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("analog_construct#0", (args) => CreateSyntaxNode(true, nameof(analog_construct), args), new Lazy<IParser<CharToken>>(() => Parser.String("analog", true).Text()), new Lazy<IParser<CharToken>>(() => Parser.String("initial", true).Text()), new Lazy<IParser<CharToken>>(() => analog_function_statement.Value.Token()))
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("analog_construct#1", (args) => CreateSyntaxNode(true, nameof(analog_construct), args), new Lazy<IParser<CharToken>>(() => Parser.String("analog", true).Text()), new Lazy<IParser<CharToken>>(() => analog_statement.Value.Token()))).Named("analog_construct"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> analog_procedural_assignment =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("analog_procedural_assignment#0", (args) => CreateSyntaxNode(true, nameof(analog_procedural_assignment), args), new Lazy<IParser<CharToken>>(() => analog_variable_assignment.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.Char(';', true))).Named("analog_procedural_assignment"));
@@ -1283,7 +1288,7 @@ namespace CFGToolkit.Parsers.VerilogAMS
 
         public static Lazy<IParser<CharToken, SyntaxNode>> statement_or_null =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("statement_or_null#0", (args) => CreateSyntaxNode(true, nameof(statement_or_null), args), new Lazy<IParser<CharToken>>(() => statement.Value.Token()))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("statement_or_null#1", (args) => CreateSyntaxNode(true, nameof(statement_or_null), args), new Lazy<IParser<CharToken>>(() => attribute_instance.Value.Many(greedy: true).Token()), new Lazy<IParser<CharToken>>(() => Parser.Char(';', true)))).Named("statement_or_null"));
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("statement_or_null#1", (args) => CreateSyntaxNode(true, nameof(statement_or_null), args), new Lazy<IParser<CharToken>>(() => attribute_instance.Value.Many(greedy: true).Token()), new Lazy<IParser<CharToken>>(() => Parser.Char(';', true)))).Named("statement_or_null"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> function_statement =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("function_statement#0", (args) => CreateSyntaxNode(true, nameof(function_statement), args), new Lazy<IParser<CharToken>>(() => statement.Value.Token())).Named("function_statement"));
@@ -1604,7 +1609,7 @@ namespace CFGToolkit.Parsers.VerilogAMS
 
         public static Lazy<IParser<CharToken, SyntaxNode>> path_delay_value =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("path_delay_value#0", (args) => CreateSyntaxNode(true, nameof(path_delay_value), args), new Lazy<IParser<CharToken>>(() => list_of_path_delay_expressions.Value.Token()))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("path_delay_value#1", (args) => CreateSyntaxNode(true, nameof(path_delay_value), args), new Lazy<IParser<CharToken>>(() => Parser.Char('(', true)), new Lazy<IParser<CharToken>>(() => list_of_path_delay_expressions.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.Char(')', true)))).Named("path_delay_value"));
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("path_delay_value#1", (args) => CreateSyntaxNode(true, nameof(path_delay_value), args), new Lazy<IParser<CharToken>>(() => Parser.Char('(', true)), new Lazy<IParser<CharToken>>(() => list_of_path_delay_expressions.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.Char(')', true)))).Named("path_delay_value"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> list_of_path_delay_expressions =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("list_of_path_delay_expressions#0", (args) => CreateSyntaxNode(true, nameof(list_of_path_delay_expressions), args), new Lazy<IParser<CharToken>>(() => t_path_delay_expression.Value.Token()))
@@ -1825,12 +1830,12 @@ namespace CFGToolkit.Parsers.VerilogAMS
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("data_event#0", (args) => CreateSyntaxNode(true, nameof(data_event), args), new Lazy<IParser<CharToken>>(() => timing_check_event.Value.Token())).Named("data_event"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> delayed_data =
-          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("delayed_data#0", (args) => CreateSyntaxNode(true, nameof(delayed_data), args), new Lazy<IParser<CharToken>>(() => terminal_identifier.Value.Token()))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("delayed_data#1", (args) => CreateSyntaxNode(true, nameof(delayed_data), args), new Lazy<IParser<CharToken>>(() => terminal_identifier.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.Char('[', true)), new Lazy<IParser<CharToken>>(() => constant_mintypmax_expression.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.Char(']', true)))).Named("delayed_data"));
+          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("delayed_data#0", (args) => CreateSyntaxNode(true, nameof(delayed_data), args), new Lazy<IParser<CharToken>>(() => terminal_identifier.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.Char('[', true)), new Lazy<IParser<CharToken>>(() => constant_mintypmax_expression.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.Char(']', true)))
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("delayed_data#1", (args) => CreateSyntaxNode(true, nameof(delayed_data), args), new Lazy<IParser<CharToken>>(() => terminal_identifier.Value.Token()))).Named("delayed_data"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> delayed_reference =
-          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("delayed_reference#0", (args) => CreateSyntaxNode(true, nameof(delayed_reference), args), new Lazy<IParser<CharToken>>(() => terminal_identifier.Value.Token()))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("delayed_reference#1", (args) => CreateSyntaxNode(true, nameof(delayed_reference), args), new Lazy<IParser<CharToken>>(() => terminal_identifier.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.Char('[', true)), new Lazy<IParser<CharToken>>(() => constant_mintypmax_expression.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.Char(']', true)))).Named("delayed_reference"));
+          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("delayed_reference#0", (args) => CreateSyntaxNode(true, nameof(delayed_reference), args), new Lazy<IParser<CharToken>>(() => terminal_identifier.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.Char('[', true)), new Lazy<IParser<CharToken>>(() => constant_mintypmax_expression.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.Char(']', true)))
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("delayed_reference#1", (args) => CreateSyntaxNode(true, nameof(delayed_reference), args), new Lazy<IParser<CharToken>>(() => terminal_identifier.Value.Token()))).Named("delayed_reference"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> end_edge_offset =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("end_edge_offset#0", (args) => CreateSyntaxNode(true, nameof(end_edge_offset), args), new Lazy<IParser<CharToken>>(() => mintypmax_expression.Value.Token())).Named("end_edge_offset"));
@@ -1873,12 +1878,12 @@ namespace CFGToolkit.Parsers.VerilogAMS
 
         public static Lazy<IParser<CharToken, SyntaxNode>> timing_check_event_control =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("timing_check_event_control#0", (args) => CreateSyntaxNode(true, nameof(timing_check_event_control), args), new Lazy<IParser<CharToken>>(() => Parser.String("posedge", true).Text()))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("timing_check_event_control#1", (args) => CreateSyntaxNode(true, nameof(timing_check_event_control), args), new Lazy<IParser<CharToken>>(() => Parser.String("negedge", true).Text()))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("timing_check_event_control#2", (args) => CreateSyntaxNode(true, nameof(timing_check_event_control), args), new Lazy<IParser<CharToken>>(() => edge_control_specifier.Value.Token())))).Named("timing_check_event_control"));
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("timing_check_event_control#1", (args) => CreateSyntaxNode(true, nameof(timing_check_event_control), args), new Lazy<IParser<CharToken>>(() => Parser.String("negedge", true).Text()))
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("timing_check_event_control#2", (args) => CreateSyntaxNode(true, nameof(timing_check_event_control), args), new Lazy<IParser<CharToken>>(() => edge_control_specifier.Value.Token())))).Named("timing_check_event_control"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> specify_terminal_descriptor =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("specify_terminal_descriptor#0", (args) => CreateSyntaxNode(true, nameof(specify_terminal_descriptor), args), new Lazy<IParser<CharToken>>(() => specify_input_terminal_descriptor.Value.Token()))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("specify_terminal_descriptor#1", (args) => CreateSyntaxNode(true, nameof(specify_terminal_descriptor), args), new Lazy<IParser<CharToken>>(() => specify_output_terminal_descriptor.Value.Token()))).Named("specify_terminal_descriptor"));
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("specify_terminal_descriptor#1", (args) => CreateSyntaxNode(true, nameof(specify_terminal_descriptor), args), new Lazy<IParser<CharToken>>(() => specify_output_terminal_descriptor.Value.Token()))).Named("specify_terminal_descriptor"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> edge_control_specifier =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("edge_control_specifier#0", (args) => CreateSyntaxNode(true, nameof(edge_control_specifier), args), new Lazy<IParser<CharToken>>(() => Parser.String("edge", true).Text()), new Lazy<IParser<CharToken>>(() => edge_control_specifier_optional.Value.Optional(greedy: true).Token())).Named("edge_control_specifier"));
@@ -1891,31 +1896,31 @@ namespace CFGToolkit.Parsers.VerilogAMS
 
         public static Lazy<IParser<CharToken, SyntaxNode>> edge_descriptor2 =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("edge_descriptor2#0", (args) => CreateSyntaxNode(true, nameof(edge_descriptor2), args), new Lazy<IParser<CharToken>>(() => Parser.String("01", true).Text()))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("edge_descriptor2#1", (args) => CreateSyntaxNode(true, nameof(edge_descriptor2), args), new Lazy<IParser<CharToken>>(() => Parser.String("10", true).Text()))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("edge_descriptor2#2", (args) => CreateSyntaxNode(true, nameof(edge_descriptor2), args), new Lazy<IParser<CharToken>>(() => z_or_x.Value.Token()), new Lazy<IParser<CharToken>>(() => zero_or_one.Value.Token()))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("edge_descriptor2#3", (args) => CreateSyntaxNode(true, nameof(edge_descriptor2), args), new Lazy<IParser<CharToken>>(() => zero_or_one.Value.Token()), new Lazy<IParser<CharToken>>(() => z_or_x.Value.Token()))))).Named("edge_descriptor2"));
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("edge_descriptor2#1", (args) => CreateSyntaxNode(true, nameof(edge_descriptor2), args), new Lazy<IParser<CharToken>>(() => Parser.String("10", true).Text()))
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("edge_descriptor2#2", (args) => CreateSyntaxNode(true, nameof(edge_descriptor2), args), new Lazy<IParser<CharToken>>(() => z_or_x.Value.Token()), new Lazy<IParser<CharToken>>(() => zero_or_one.Value.Token()))
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("edge_descriptor2#3", (args) => CreateSyntaxNode(true, nameof(edge_descriptor2), args), new Lazy<IParser<CharToken>>(() => zero_or_one.Value.Token()), new Lazy<IParser<CharToken>>(() => z_or_x.Value.Token()))))).Named("edge_descriptor2"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> zero_or_one =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("zero_or_one#0", (args) => CreateSyntaxNode(true, nameof(zero_or_one), args), new Lazy<IParser<CharToken>>(() => Parser.Char('0', true)))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("zero_or_one#1", (args) => CreateSyntaxNode(true, nameof(zero_or_one), args), new Lazy<IParser<CharToken>>(() => Parser.Char('1', true)))).Named("zero_or_one"));
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("zero_or_one#1", (args) => CreateSyntaxNode(true, nameof(zero_or_one), args), new Lazy<IParser<CharToken>>(() => Parser.Char('1', true)))).Named("zero_or_one"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> z_or_x =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("z_or_x#0", (args) => CreateSyntaxNode(true, nameof(z_or_x), args), new Lazy<IParser<CharToken>>(() => Parser.Char('x', true)))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("z_or_x#1", (args) => CreateSyntaxNode(true, nameof(z_or_x), args), new Lazy<IParser<CharToken>>(() => Parser.Char('X', true)))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("z_or_x#2", (args) => CreateSyntaxNode(true, nameof(z_or_x), args), new Lazy<IParser<CharToken>>(() => Parser.Char('z', true)))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("z_or_x#3", (args) => CreateSyntaxNode(true, nameof(z_or_x), args), new Lazy<IParser<CharToken>>(() => Parser.Char('Z', true)))))).Named("z_or_x"));
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("z_or_x#1", (args) => CreateSyntaxNode(true, nameof(z_or_x), args), new Lazy<IParser<CharToken>>(() => Parser.Char('X', true)))
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("z_or_x#2", (args) => CreateSyntaxNode(true, nameof(z_or_x), args), new Lazy<IParser<CharToken>>(() => Parser.Char('z', true)))
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("z_or_x#3", (args) => CreateSyntaxNode(true, nameof(z_or_x), args), new Lazy<IParser<CharToken>>(() => Parser.Char('Z', true)))))).Named("z_or_x"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> timing_check_condition =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("timing_check_condition#0", (args) => CreateSyntaxNode(true, nameof(timing_check_condition), args), new Lazy<IParser<CharToken>>(() => scalar_timing_check_condition.Value.Token()))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("timing_check_condition#1", (args) => CreateSyntaxNode(true, nameof(timing_check_condition), args), new Lazy<IParser<CharToken>>(() => Parser.Char('(', true)), new Lazy<IParser<CharToken>>(() => scalar_timing_check_condition.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.Char(')', true)))).Named("timing_check_condition"));
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("timing_check_condition#1", (args) => CreateSyntaxNode(true, nameof(timing_check_condition), args), new Lazy<IParser<CharToken>>(() => Parser.Char('(', true)), new Lazy<IParser<CharToken>>(() => scalar_timing_check_condition.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.Char(')', true)))).Named("timing_check_condition"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> scalar_timing_check_condition =
-          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("scalar_timing_check_condition#0", (args) => CreateSyntaxNode(true, nameof(scalar_timing_check_condition), args), new Lazy<IParser<CharToken>>(() => expression.Value.Token()))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("scalar_timing_check_condition#1", (args) => CreateSyntaxNode(true, nameof(scalar_timing_check_condition), args), new Lazy<IParser<CharToken>>(() => Parser.Char('~', true)), new Lazy<IParser<CharToken>>(() => expression.Value.Token()))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("scalar_timing_check_condition#2", (args) => CreateSyntaxNode(true, nameof(scalar_timing_check_condition), args), new Lazy<IParser<CharToken>>(() => expression.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.String("==", true).Text()), new Lazy<IParser<CharToken>>(() => scalar_constant.Value.Token()))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("scalar_timing_check_condition#3", (args) => CreateSyntaxNode(true, nameof(scalar_timing_check_condition), args), new Lazy<IParser<CharToken>>(() => expression.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.String("===", true).Text()), new Lazy<IParser<CharToken>>(() => scalar_constant.Value.Token()))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("scalar_timing_check_condition#4", (args) => CreateSyntaxNode(true, nameof(scalar_timing_check_condition), args), new Lazy<IParser<CharToken>>(() => expression.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.String("!=", true).Text()), new Lazy<IParser<CharToken>>(() => scalar_constant.Value.Token()))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("scalar_timing_check_condition#5", (args) => CreateSyntaxNode(true, nameof(scalar_timing_check_condition), args), new Lazy<IParser<CharToken>>(() => expression.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.String("!==", true).Text()), new Lazy<IParser<CharToken>>(() => scalar_constant.Value.Token()))))))).Named("scalar_timing_check_condition"));
+          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("scalar_timing_check_condition#0", (args) => CreateSyntaxNode(true, nameof(scalar_timing_check_condition), args), new Lazy<IParser<CharToken>>(() => expression.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.String("===", true).Text()), new Lazy<IParser<CharToken>>(() => scalar_constant.Value.Token()))
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("scalar_timing_check_condition#1", (args) => CreateSyntaxNode(true, nameof(scalar_timing_check_condition), args), new Lazy<IParser<CharToken>>(() => expression.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.String("==", true).Text()), new Lazy<IParser<CharToken>>(() => scalar_constant.Value.Token()))
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("scalar_timing_check_condition#2", (args) => CreateSyntaxNode(true, nameof(scalar_timing_check_condition), args), new Lazy<IParser<CharToken>>(() => expression.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.String("!==", true).Text()), new Lazy<IParser<CharToken>>(() => scalar_constant.Value.Token()))
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("scalar_timing_check_condition#3", (args) => CreateSyntaxNode(true, nameof(scalar_timing_check_condition), args), new Lazy<IParser<CharToken>>(() => expression.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.String("!=", true).Text()), new Lazy<IParser<CharToken>>(() => scalar_constant.Value.Token()))
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("scalar_timing_check_condition#4", (args) => CreateSyntaxNode(true, nameof(scalar_timing_check_condition), args), new Lazy<IParser<CharToken>>(() => Parser.Char('~', true)), new Lazy<IParser<CharToken>>(() => expression.Value.Token()))
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("scalar_timing_check_condition#5", (args) => CreateSyntaxNode(true, nameof(scalar_timing_check_condition), args), new Lazy<IParser<CharToken>>(() => expression.Value.Token()))))))).Named("scalar_timing_check_condition"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> scalar_constant =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("scalar_constant#0", (args) => CreateSyntaxNode(true, nameof(scalar_constant), args), new Lazy<IParser<CharToken>>(() => Parser.String("1'b0", true).Text()))
@@ -2121,10 +2126,10 @@ namespace CFGToolkit.Parsers.VerilogAMS
 
         public static Lazy<IParser<CharToken, SyntaxNode>> analog_small_signal_function_call =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("analog_small_signal_function_call#0", (args) => CreateSyntaxNode(true, nameof(analog_small_signal_function_call), args), new Lazy<IParser<CharToken>>(() => Parser.String("ac_stim", true).Text()), new Lazy<IParser<CharToken>>(() => Parser.Char('(', true)), new Lazy<IParser<CharToken>>(() => analog_small_signal_function_call_optional.Value.Optional(greedy: true).Token()), new Lazy<IParser<CharToken>>(() => Parser.Char(')', true)))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("analog_small_signal_function_call#1", (args) => CreateSyntaxNode(true, nameof(analog_small_signal_function_call), args), new Lazy<IParser<CharToken>>(() => Parser.String("white_noise", true).Text()), new Lazy<IParser<CharToken>>(() => Parser.Char('(', true)), new Lazy<IParser<CharToken>>(() => analog_expression.Value.Token()), new Lazy<IParser<CharToken>>(() => analog_small_signal_function_call_optional_2.Value.Optional(greedy: true).Token()), new Lazy<IParser<CharToken>>(() => Parser.Char(')', true)))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("analog_small_signal_function_call#2", (args) => CreateSyntaxNode(true, nameof(analog_small_signal_function_call), args), new Lazy<IParser<CharToken>>(() => Parser.String("flicker_noise", true).Text()), new Lazy<IParser<CharToken>>(() => Parser.Char('(', true)), new Lazy<IParser<CharToken>>(() => analog_expression.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.Char(',', true)), new Lazy<IParser<CharToken>>(() => analog_expression.Value.Token()), new Lazy<IParser<CharToken>>(() => analog_small_signal_function_call_optional_3.Value.Optional(greedy: true).Token()), new Lazy<IParser<CharToken>>(() => Parser.Char(')', true)))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("analog_small_signal_function_call#3", (args) => CreateSyntaxNode(true, nameof(analog_small_signal_function_call), args), new Lazy<IParser<CharToken>>(() => Parser.String("noise_table", true).Text()), new Lazy<IParser<CharToken>>(() => Parser.Char('(', true)), new Lazy<IParser<CharToken>>(() => noise_table_input_arg.Value.Token()), new Lazy<IParser<CharToken>>(() => analog_small_signal_function_call_optional_4.Value.Optional(greedy: true).Token()), new Lazy<IParser<CharToken>>(() => Parser.Char(')', true)))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("analog_small_signal_function_call#4", (args) => CreateSyntaxNode(true, nameof(analog_small_signal_function_call), args), new Lazy<IParser<CharToken>>(() => Parser.String("noise_table_log", true).Text()), new Lazy<IParser<CharToken>>(() => Parser.Char('(', true)), new Lazy<IParser<CharToken>>(() => noise_table_input_arg.Value.Token()), new Lazy<IParser<CharToken>>(() => analog_small_signal_function_call_optional_5.Value.Optional(greedy: true).Token()), new Lazy<IParser<CharToken>>(() => Parser.Char(')', true))))))).Named("analog_small_signal_function_call"));
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("analog_small_signal_function_call#1", (args) => CreateSyntaxNode(true, nameof(analog_small_signal_function_call), args), new Lazy<IParser<CharToken>>(() => Parser.String("white_noise", true).Text()), new Lazy<IParser<CharToken>>(() => Parser.Char('(', true)), new Lazy<IParser<CharToken>>(() => analog_expression.Value.Token()), new Lazy<IParser<CharToken>>(() => analog_small_signal_function_call_optional_2.Value.Optional(greedy: true).Token()), new Lazy<IParser<CharToken>>(() => Parser.Char(')', true)))
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("analog_small_signal_function_call#2", (args) => CreateSyntaxNode(true, nameof(analog_small_signal_function_call), args), new Lazy<IParser<CharToken>>(() => Parser.String("flicker_noise", true).Text()), new Lazy<IParser<CharToken>>(() => Parser.Char('(', true)), new Lazy<IParser<CharToken>>(() => analog_expression.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.Char(',', true)), new Lazy<IParser<CharToken>>(() => analog_expression.Value.Token()), new Lazy<IParser<CharToken>>(() => analog_small_signal_function_call_optional_3.Value.Optional(greedy: true).Token()), new Lazy<IParser<CharToken>>(() => Parser.Char(')', true)))
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("analog_small_signal_function_call#3", (args) => CreateSyntaxNode(true, nameof(analog_small_signal_function_call), args), new Lazy<IParser<CharToken>>(() => Parser.String("noise_table", true).Text()), new Lazy<IParser<CharToken>>(() => Parser.Char('(', true)), new Lazy<IParser<CharToken>>(() => noise_table_input_arg.Value.Token()), new Lazy<IParser<CharToken>>(() => analog_small_signal_function_call_optional_4.Value.Optional(greedy: true).Token()), new Lazy<IParser<CharToken>>(() => Parser.Char(')', true)))
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("analog_small_signal_function_call#4", (args) => CreateSyntaxNode(true, nameof(analog_small_signal_function_call), args), new Lazy<IParser<CharToken>>(() => Parser.String("noise_table_log", true).Text()), new Lazy<IParser<CharToken>>(() => Parser.Char('(', true)), new Lazy<IParser<CharToken>>(() => noise_table_input_arg.Value.Token()), new Lazy<IParser<CharToken>>(() => analog_small_signal_function_call_optional_5.Value.Optional(greedy: true).Token()), new Lazy<IParser<CharToken>>(() => Parser.Char(')', true))))))).Named("analog_small_signal_function_call"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> analog_small_signal_function_call_optional =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("analog_small_signal_function_call_optional#0", (args) => CreateSyntaxNode(true, nameof(analog_small_signal_function_call_optional), args), new Lazy<IParser<CharToken>>(() => Parser.String("\"", true).Text()), new Lazy<IParser<CharToken>>(() => analysis_identifier.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.String("\"", true).Text()), new Lazy<IParser<CharToken>>(() => analog_small_signal_function_call_optional_6.Value.Optional(greedy: true).Token())).Named("analog_small_signal_function_call_optional"));
@@ -2158,9 +2163,9 @@ namespace CFGToolkit.Parsers.VerilogAMS
 
         public static Lazy<IParser<CharToken, SyntaxNode>> laplace_filter_name =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("laplace_filter_name#0", (args) => CreateSyntaxNode(true, nameof(laplace_filter_name), args), new Lazy<IParser<CharToken>>(() => Parser.String("laplace_zd", true).Text()))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("laplace_filter_name#1", (args) => CreateSyntaxNode(true, nameof(laplace_filter_name), args), new Lazy<IParser<CharToken>>(() => Parser.String("laplace_zp", true).Text()))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("laplace_filter_name#2", (args) => CreateSyntaxNode(true, nameof(laplace_filter_name), args), new Lazy<IParser<CharToken>>(() => Parser.String("laplace_np", true).Text()))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("laplace_filter_name#3", (args) => CreateSyntaxNode(true, nameof(laplace_filter_name), args), new Lazy<IParser<CharToken>>(() => Parser.String("laplace_nd", true).Text()))))).Named("laplace_filter_name"));
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("laplace_filter_name#1", (args) => CreateSyntaxNode(true, nameof(laplace_filter_name), args), new Lazy<IParser<CharToken>>(() => Parser.String("laplace_zp", true).Text()))
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("laplace_filter_name#2", (args) => CreateSyntaxNode(true, nameof(laplace_filter_name), args), new Lazy<IParser<CharToken>>(() => Parser.String("laplace_np", true).Text()))
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("laplace_filter_name#3", (args) => CreateSyntaxNode(true, nameof(laplace_filter_name), args), new Lazy<IParser<CharToken>>(() => Parser.String("laplace_nd", true).Text()))))).Named("laplace_filter_name"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> zi_filter_name =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("zi_filter_name#0", (args) => CreateSyntaxNode(true, nameof(zi_filter_name), args), new Lazy<IParser<CharToken>>(() => Parser.String("zi_zp", true).Text()))
@@ -2296,16 +2301,16 @@ namespace CFGToolkit.Parsers.VerilogAMS
 
         public static Lazy<IParser<CharToken, SyntaxNode>> analog_expression_primary =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("analog_expression_primary#0", (args) => CreateSyntaxNode(true, nameof(analog_expression_primary), args), new Lazy<IParser<CharToken>>(() => analog_primary.Value.Token()))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("analog_expression_primary#1", (args) => CreateSyntaxNode(true, nameof(analog_expression_primary), args), new Lazy<IParser<CharToken>>(() => unary_operator.Value.Token()), new Lazy<IParser<CharToken>>(() => attribute_instance.Value.Many(greedy: true).Token()), new Lazy<IParser<CharToken>>(() => analog_primary.Value.Token()))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("analog_expression_primary#2", (args) => CreateSyntaxNode(true, nameof(analog_expression_primary), args), new Lazy<IParser<CharToken>>(() => @string.Value.Token())))).Named("analog_expression_primary"));
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("analog_expression_primary#1", (args) => CreateSyntaxNode(true, nameof(analog_expression_primary), args), new Lazy<IParser<CharToken>>(() => unary_operator.Value.Token()), new Lazy<IParser<CharToken>>(() => attribute_instance.Value.Many(greedy: true).Token()), new Lazy<IParser<CharToken>>(() => analog_primary.Value.Token()))
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("analog_expression_primary#2", (args) => CreateSyntaxNode(true, nameof(analog_expression_primary), args), new Lazy<IParser<CharToken>>(() => @string.Value.Token())))).Named("analog_expression_primary"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> abstol_expression =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("abstol_expression#0", (args) => CreateSyntaxNode(true, nameof(abstol_expression), args), new Lazy<IParser<CharToken>>(() => constant_expression.Value.Token()))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("abstol_expression#1", (args) => CreateSyntaxNode(true, nameof(abstol_expression), args), new Lazy<IParser<CharToken>>(() => nature_identifier.Value.Token()))).Named("abstol_expression"));
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("abstol_expression#1", (args) => CreateSyntaxNode(true, nameof(abstol_expression), args), new Lazy<IParser<CharToken>>(() => nature_identifier.Value.Token()))).Named("abstol_expression"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> analog_range_expression =
-          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("analog_range_expression#0", (args) => CreateSyntaxNode(true, nameof(analog_range_expression), args), new Lazy<IParser<CharToken>>(() => analog_expression.Value.Token()))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("analog_range_expression#1", (args) => CreateSyntaxNode(true, nameof(analog_range_expression), args), new Lazy<IParser<CharToken>>(() => msb_constant_expression.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.Char(':', true)), new Lazy<IParser<CharToken>>(() => lsb_constant_expression.Value.Token()))).Named("analog_range_expression"));
+          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("analog_range_expression#0", (args) => CreateSyntaxNode(true, nameof(analog_range_expression), args), new Lazy<IParser<CharToken>>(() => msb_constant_expression.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.Char(':', true)), new Lazy<IParser<CharToken>>(() => lsb_constant_expression.Value.Token()))
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("analog_range_expression#1", (args) => CreateSyntaxNode(true, nameof(analog_range_expression), args), new Lazy<IParser<CharToken>>(() => analog_expression.Value.Token()))).Named("analog_range_expression"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> analog_expression_or_null =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("analog_expression_or_null#0", (args) => CreateSyntaxNode(true, nameof(analog_expression_or_null), args), new Lazy<IParser<CharToken>>(() => analog_expression.Value.Optional(greedy: true).Token())).Named("analog_expression_or_null"));
@@ -2396,7 +2401,7 @@ namespace CFGToolkit.Parsers.VerilogAMS
 
         public static Lazy<IParser<CharToken, SyntaxNode>> constant_expression_primary =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("constant_expression_primary#0", (args) => CreateSyntaxNode(true, nameof(constant_expression_primary), args), new Lazy<IParser<CharToken>>(() => constant_primary.Value.Token()))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("constant_expression_primary#1", (args) => CreateSyntaxNode(true, nameof(constant_expression_primary), args), new Lazy<IParser<CharToken>>(() => unary_operator.Value.Token()), new Lazy<IParser<CharToken>>(() => attribute_instance.Value.Many(greedy: true).Token()), new Lazy<IParser<CharToken>>(() => constant_primary.Value.Token()))).Named("constant_expression_primary"));
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("constant_expression_primary#1", (args) => CreateSyntaxNode(true, nameof(constant_expression_primary), args), new Lazy<IParser<CharToken>>(() => unary_operator.Value.Token()), new Lazy<IParser<CharToken>>(() => attribute_instance.Value.Many(greedy: true).Token()), new Lazy<IParser<CharToken>>(() => constant_primary.Value.Token()))).Named("constant_expression_primary"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> analysis_or_constant_expression =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("analysis_or_constant_expression#0", (args) => CreateSyntaxNode(true, nameof(analysis_or_constant_expression), args), new Lazy<IParser<CharToken>>(() => analysis_or_constant_expression_10.Value.Token()), new Lazy<IParser<CharToken>>(() => analysis_or_constant_expression_prim.Value.Token())).Named("analysis_or_constant_expression"));
@@ -2472,18 +2477,18 @@ namespace CFGToolkit.Parsers.VerilogAMS
 
         public static Lazy<IParser<CharToken, SyntaxNode>> analysis_or_constant_expression_primary =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("analysis_or_constant_expression_primary#0", (args) => CreateSyntaxNode(true, nameof(analysis_or_constant_expression_primary), args), new Lazy<IParser<CharToken>>(() => constant_primary.Value.Token()))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("analysis_or_constant_expression_primary#1", (args) => CreateSyntaxNode(true, nameof(analysis_or_constant_expression_primary), args), new Lazy<IParser<CharToken>>(() => unary_operator.Value.Token()), new Lazy<IParser<CharToken>>(() => attribute_instance.Value.Many(greedy: true).Token()), new Lazy<IParser<CharToken>>(() => constant_primary.Value.Token()))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("analysis_or_constant_expression_primary#2", (args) => CreateSyntaxNode(true, nameof(analysis_or_constant_expression_primary), args), new Lazy<IParser<CharToken>>(() => analysis_function_call.Value.Token())))).Named("analysis_or_constant_expression_primary"));
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("analysis_or_constant_expression_primary#1", (args) => CreateSyntaxNode(true, nameof(analysis_or_constant_expression_primary), args), new Lazy<IParser<CharToken>>(() => unary_operator.Value.Token()), new Lazy<IParser<CharToken>>(() => attribute_instance.Value.Many(greedy: true).Token()), new Lazy<IParser<CharToken>>(() => constant_primary.Value.Token()))
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("analysis_or_constant_expression_primary#2", (args) => CreateSyntaxNode(true, nameof(analysis_or_constant_expression_primary), args), new Lazy<IParser<CharToken>>(() => analysis_function_call.Value.Token())))).Named("analysis_or_constant_expression_primary"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> constant_mintypmax_expression =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("constant_mintypmax_expression#0", (args) => CreateSyntaxNode(true, nameof(constant_mintypmax_expression), args), new Lazy<IParser<CharToken>>(() => constant_expression.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.Char(':', true)), new Lazy<IParser<CharToken>>(() => constant_expression.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.Char(':', true)), new Lazy<IParser<CharToken>>(() => constant_expression.Value.Token()))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("constant_mintypmax_expression#1", (args) => CreateSyntaxNode(true, nameof(constant_mintypmax_expression), args), new Lazy<IParser<CharToken>>(() => constant_expression.Value.Token()))).Named("constant_mintypmax_expression"));
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("constant_mintypmax_expression#1", (args) => CreateSyntaxNode(true, nameof(constant_mintypmax_expression), args), new Lazy<IParser<CharToken>>(() => constant_expression.Value.Token()))).Named("constant_mintypmax_expression"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> constant_range_expression =
-          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("constant_range_expression#0", (args) => CreateSyntaxNode(true, nameof(constant_range_expression), args), new Lazy<IParser<CharToken>>(() => constant_expression.Value.Token()))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("constant_range_expression#1", (args) => CreateSyntaxNode(true, nameof(constant_range_expression), args), new Lazy<IParser<CharToken>>(() => msb_constant_expression.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.Char(':', true)), new Lazy<IParser<CharToken>>(() => lsb_constant_expression.Value.Token()))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("constant_range_expression#2", (args) => CreateSyntaxNode(true, nameof(constant_range_expression), args), new Lazy<IParser<CharToken>>(() => constant_base_expression.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.String("+:", true).Text()), new Lazy<IParser<CharToken>>(() => width_constant_expression.Value.Token()))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("constant_range_expression#3", (args) => CreateSyntaxNode(true, nameof(constant_range_expression), args), new Lazy<IParser<CharToken>>(() => constant_base_expression.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.String("-:", true).Text()), new Lazy<IParser<CharToken>>(() => width_constant_expression.Value.Token()))))).Named("constant_range_expression"));
+          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("constant_range_expression#0", (args) => CreateSyntaxNode(true, nameof(constant_range_expression), args), new Lazy<IParser<CharToken>>(() => msb_constant_expression.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.Char(':', true)), new Lazy<IParser<CharToken>>(() => lsb_constant_expression.Value.Token()))
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("constant_range_expression#1", (args) => CreateSyntaxNode(true, nameof(constant_range_expression), args), new Lazy<IParser<CharToken>>(() => constant_base_expression.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.String("+:", true).Text()), new Lazy<IParser<CharToken>>(() => width_constant_expression.Value.Token()))
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("constant_range_expression#2", (args) => CreateSyntaxNode(true, nameof(constant_range_expression), args), new Lazy<IParser<CharToken>>(() => constant_base_expression.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.String("-:", true).Text()), new Lazy<IParser<CharToken>>(() => width_constant_expression.Value.Token()))
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("constant_range_expression#3", (args) => CreateSyntaxNode(true, nameof(constant_range_expression), args), new Lazy<IParser<CharToken>>(() => constant_expression.Value.Token()))))).Named("constant_range_expression"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> dimension_constant_expression =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("dimension_constant_expression#0", (args) => CreateSyntaxNode(true, nameof(dimension_constant_expression), args), new Lazy<IParser<CharToken>>(() => constant_expression.Value.Token())).Named("dimension_constant_expression"));
@@ -2560,7 +2565,7 @@ namespace CFGToolkit.Parsers.VerilogAMS
 
         public static Lazy<IParser<CharToken, SyntaxNode>> expression_primary =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("expression_primary#0", (args) => CreateSyntaxNode(true, nameof(expression_primary), args), new Lazy<IParser<CharToken>>(() => primary.Value.Token()))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("expression_primary#1", (args) => CreateSyntaxNode(true, nameof(expression_primary), args), new Lazy<IParser<CharToken>>(() => unary_operator.Value.Token()), new Lazy<IParser<CharToken>>(() => attribute_instance.Value.Many(greedy: true).Token()), new Lazy<IParser<CharToken>>(() => primary.Value.Token()))).Named("expression_primary"));
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("expression_primary#1", (args) => CreateSyntaxNode(true, nameof(expression_primary), args), new Lazy<IParser<CharToken>>(() => unary_operator.Value.Token()), new Lazy<IParser<CharToken>>(() => attribute_instance.Value.Many(greedy: true).Token()), new Lazy<IParser<CharToken>>(() => primary.Value.Token()))).Named("expression_primary"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> expression1 =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("expression1#0", (args) => CreateSyntaxNode(true, nameof(expression1), args), new Lazy<IParser<CharToken>>(() => expression_10.Value.Token()), new Lazy<IParser<CharToken>>(() => expression1_prim.Value.Token())).Named("expression1"));
@@ -2634,7 +2639,7 @@ namespace CFGToolkit.Parsers.VerilogAMS
 
         public static Lazy<IParser<CharToken, SyntaxNode>> mintypmax_expression =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("mintypmax_expression#0", (args) => CreateSyntaxNode(true, nameof(mintypmax_expression), args), new Lazy<IParser<CharToken>>(() => expression.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.Char(':', true)), new Lazy<IParser<CharToken>>(() => expression.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.Char(':', true)), new Lazy<IParser<CharToken>>(() => expression.Value.Token()))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("mintypmax_expression#1", (args) => CreateSyntaxNode(true, nameof(mintypmax_expression), args), new Lazy<IParser<CharToken>>(() => expression.Value.Token()))).Named("mintypmax_expression"));
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("mintypmax_expression#1", (args) => CreateSyntaxNode(true, nameof(mintypmax_expression), args), new Lazy<IParser<CharToken>>(() => expression.Value.Token()))).Named("mintypmax_expression"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> module_path_conditional_expression =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("module_path_conditional_expression#0", (args) => CreateSyntaxNode(true, nameof(module_path_conditional_expression), args), new Lazy<IParser<CharToken>>(() => module_path_expression.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.Char('?', true)), new Lazy<IParser<CharToken>>(() => attribute_instance.Value.Many(greedy: true).Token()), new Lazy<IParser<CharToken>>(() => module_path_expression.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.Char(':', true)), new Lazy<IParser<CharToken>>(() => module_path_expression.Value.Token())).Named("module_path_conditional_expression"));
@@ -2644,23 +2649,23 @@ namespace CFGToolkit.Parsers.VerilogAMS
            .XOr(Parser.Sequence<CharToken, SyntaxNode>("module_path_expression#1", (args) => CreateSyntaxNode(true, nameof(module_path_expression), args), new Lazy<IParser<CharToken>>(() => unary_module_path_operator.Value.Token()), new Lazy<IParser<CharToken>>(() => attribute_instance.Value.Many(greedy: true).Token()), new Lazy<IParser<CharToken>>(() => module_path_primary.Value.Token()), new Lazy<IParser<CharToken>>(() => module_path_expression_prim.Value.Token()))).Named("module_path_expression"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> module_path_mintypmax_expression =
-          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("module_path_mintypmax_expression#0", (args) => CreateSyntaxNode(true, nameof(module_path_mintypmax_expression), args), new Lazy<IParser<CharToken>>(() => module_path_primary.Value.Token()), new Lazy<IParser<CharToken>>(() => module_path_expression_prim.Value.Token()))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("module_path_mintypmax_expression#1", (args) => CreateSyntaxNode(true, nameof(module_path_mintypmax_expression), args), new Lazy<IParser<CharToken>>(() => unary_module_path_operator.Value.Token()), new Lazy<IParser<CharToken>>(() => attribute_instance.Value.Many(greedy: true).Token()), new Lazy<IParser<CharToken>>(() => module_path_primary.Value.Token()), new Lazy<IParser<CharToken>>(() => module_path_expression_prim.Value.Token()))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("module_path_mintypmax_expression#2", (args) => CreateSyntaxNode(true, nameof(module_path_mintypmax_expression), args), new Lazy<IParser<CharToken>>(() => module_path_primary.Value.Token()), new Lazy<IParser<CharToken>>(() => module_path_expression_prim.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.Char(':', true)), new Lazy<IParser<CharToken>>(() => module_path_expression.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.Char(':', true)), new Lazy<IParser<CharToken>>(() => module_path_expression.Value.Token()))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("module_path_mintypmax_expression#3", (args) => CreateSyntaxNode(true, nameof(module_path_mintypmax_expression), args), new Lazy<IParser<CharToken>>(() => unary_module_path_operator.Value.Token()), new Lazy<IParser<CharToken>>(() => attribute_instance.Value.Many(greedy: true).Token()), new Lazy<IParser<CharToken>>(() => module_path_primary.Value.Token()), new Lazy<IParser<CharToken>>(() => module_path_expression_prim.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.Char(':', true)), new Lazy<IParser<CharToken>>(() => module_path_expression.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.Char(':', true)), new Lazy<IParser<CharToken>>(() => module_path_expression.Value.Token()))))).Named("module_path_mintypmax_expression"));
+          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("module_path_mintypmax_expression#0", (args) => CreateSyntaxNode(true, nameof(module_path_mintypmax_expression), args), new Lazy<IParser<CharToken>>(() => module_path_primary.Value.Token()), new Lazy<IParser<CharToken>>(() => module_path_expression_prim.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.Char(':', true)), new Lazy<IParser<CharToken>>(() => module_path_expression.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.Char(':', true)), new Lazy<IParser<CharToken>>(() => module_path_expression.Value.Token()))
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("module_path_mintypmax_expression#1", (args) => CreateSyntaxNode(true, nameof(module_path_mintypmax_expression), args), new Lazy<IParser<CharToken>>(() => unary_module_path_operator.Value.Token()), new Lazy<IParser<CharToken>>(() => attribute_instance.Value.Many(greedy: true).Token()), new Lazy<IParser<CharToken>>(() => module_path_primary.Value.Token()), new Lazy<IParser<CharToken>>(() => module_path_expression_prim.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.Char(':', true)), new Lazy<IParser<CharToken>>(() => module_path_expression.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.Char(':', true)), new Lazy<IParser<CharToken>>(() => module_path_expression.Value.Token()))
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("module_path_mintypmax_expression#2", (args) => CreateSyntaxNode(true, nameof(module_path_mintypmax_expression), args), new Lazy<IParser<CharToken>>(() => module_path_primary.Value.Token()), new Lazy<IParser<CharToken>>(() => module_path_expression_prim.Value.Token()))
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("module_path_mintypmax_expression#3", (args) => CreateSyntaxNode(true, nameof(module_path_mintypmax_expression), args), new Lazy<IParser<CharToken>>(() => unary_module_path_operator.Value.Token()), new Lazy<IParser<CharToken>>(() => attribute_instance.Value.Many(greedy: true).Token()), new Lazy<IParser<CharToken>>(() => module_path_primary.Value.Token()), new Lazy<IParser<CharToken>>(() => module_path_expression_prim.Value.Token()))))).Named("module_path_mintypmax_expression"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> msb_constant_expression =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("msb_constant_expression#0", (args) => CreateSyntaxNode(true, nameof(msb_constant_expression), args), new Lazy<IParser<CharToken>>(() => constant_expression.Value.Token())).Named("msb_constant_expression"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> nature_attribute_expression =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("nature_attribute_expression#0", (args) => CreateSyntaxNode(true, nameof(nature_attribute_expression), args), new Lazy<IParser<CharToken>>(() => constant_expression.Value.Token()))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("nature_attribute_expression#1", (args) => CreateSyntaxNode(true, nameof(nature_attribute_expression), args), new Lazy<IParser<CharToken>>(() => nature_identifier.Value.Token()))).Named("nature_attribute_expression"));
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("nature_attribute_expression#1", (args) => CreateSyntaxNode(true, nameof(nature_attribute_expression), args), new Lazy<IParser<CharToken>>(() => nature_identifier.Value.Token()))).Named("nature_attribute_expression"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> range_expression =
-          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("range_expression#0", (args) => CreateSyntaxNode(true, nameof(range_expression), args), new Lazy<IParser<CharToken>>(() => expression.Value.Token()))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("range_expression#1", (args) => CreateSyntaxNode(true, nameof(range_expression), args), new Lazy<IParser<CharToken>>(() => msb_constant_expression.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.Char(':', true)), new Lazy<IParser<CharToken>>(() => lsb_constant_expression.Value.Token()))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("range_expression#2", (args) => CreateSyntaxNode(true, nameof(range_expression), args), new Lazy<IParser<CharToken>>(() => base_expression.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.String("+:", true).Text()), new Lazy<IParser<CharToken>>(() => width_constant_expression.Value.Token()))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("range_expression#3", (args) => CreateSyntaxNode(true, nameof(range_expression), args), new Lazy<IParser<CharToken>>(() => base_expression.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.String("-:", true).Text()), new Lazy<IParser<CharToken>>(() => width_constant_expression.Value.Token()))))).Named("range_expression"));
+          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("range_expression#0", (args) => CreateSyntaxNode(true, nameof(range_expression), args), new Lazy<IParser<CharToken>>(() => msb_constant_expression.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.Char(':', true)), new Lazy<IParser<CharToken>>(() => lsb_constant_expression.Value.Token()))
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("range_expression#1", (args) => CreateSyntaxNode(true, nameof(range_expression), args), new Lazy<IParser<CharToken>>(() => base_expression.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.String("+:", true).Text()), new Lazy<IParser<CharToken>>(() => width_constant_expression.Value.Token()))
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("range_expression#2", (args) => CreateSyntaxNode(true, nameof(range_expression), args), new Lazy<IParser<CharToken>>(() => base_expression.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.String("-:", true).Text()), new Lazy<IParser<CharToken>>(() => width_constant_expression.Value.Token()))
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("range_expression#3", (args) => CreateSyntaxNode(true, nameof(range_expression), args), new Lazy<IParser<CharToken>>(() => expression.Value.Token()))))).Named("range_expression"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> width_constant_expression =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("width_constant_expression#0", (args) => CreateSyntaxNode(true, nameof(width_constant_expression), args), new Lazy<IParser<CharToken>>(() => constant_expression.Value.Token())).Named("width_constant_expression"));
@@ -2738,7 +2743,7 @@ namespace CFGToolkit.Parsers.VerilogAMS
 
         public static Lazy<IParser<CharToken, SyntaxNode>> analog_variable_lvalue =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("analog_variable_lvalue#0", (args) => CreateSyntaxNode(true, nameof(analog_variable_lvalue), args), new Lazy<IParser<CharToken>>(() => variable_identifier.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.Char('[', true)), new Lazy<IParser<CharToken>>(() => analog_expression.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.Char(']', true)), new Lazy<IParser<CharToken>>(() => analog_variable_lvalue_many.Value.Many(greedy: true).Token()))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("analog_variable_lvalue#1", (args) => CreateSyntaxNode(true, nameof(analog_variable_lvalue), args), new Lazy<IParser<CharToken>>(() => variable_identifier.Value.Token()))).Named("analog_variable_lvalue"));
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("analog_variable_lvalue#1", (args) => CreateSyntaxNode(true, nameof(analog_variable_lvalue), args), new Lazy<IParser<CharToken>>(() => variable_identifier.Value.Token()))).Named("analog_variable_lvalue"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> analog_variable_lvalue_many =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("analog_variable_lvalue_many#0", (args) => CreateSyntaxNode(true, nameof(analog_variable_lvalue_many), args), new Lazy<IParser<CharToken>>(() => Parser.Char('[', true)), new Lazy<IParser<CharToken>>(() => analog_expression.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.Char(']', true))).Named("analog_variable_lvalue_many"));
@@ -2747,9 +2752,9 @@ namespace CFGToolkit.Parsers.VerilogAMS
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("array_analog_variable_assignment#0", (args) => CreateSyntaxNode(true, nameof(array_analog_variable_assignment), args), new Lazy<IParser<CharToken>>(() => Parser.String("array_analog_variable_lvalue", true).Text()), new Lazy<IParser<CharToken>>(() => Parser.Char('=', true)), new Lazy<IParser<CharToken>>(() => array_analog_variable_rvalue.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.Char(';', true))).Named("array_analog_variable_assignment"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> array_analog_variable_rvalue =
-          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("array_analog_variable_rvalue#0", (args) => CreateSyntaxNode(true, nameof(array_analog_variable_rvalue), args), new Lazy<IParser<CharToken>>(() => Parser.String("array_variable_identifier", true).Text()))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("array_analog_variable_rvalue#1", (args) => CreateSyntaxNode(true, nameof(array_analog_variable_rvalue), args), new Lazy<IParser<CharToken>>(() => Parser.String("array_", true).Text()), new Lazy<IParser<CharToken>>(() => variable_identifier.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.Char('[', true)), new Lazy<IParser<CharToken>>(() => analog_expression.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.Char(']', true)), new Lazy<IParser<CharToken>>(() => array_analog_variable_rvalue_many.Value.Many(greedy: true).Token()))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("array_analog_variable_rvalue#2", (args) => CreateSyntaxNode(true, nameof(array_analog_variable_rvalue), args), new Lazy<IParser<CharToken>>(() => assignment_pattern.Value.Token())))).Named("array_analog_variable_rvalue"));
+          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("array_analog_variable_rvalue#0", (args) => CreateSyntaxNode(true, nameof(array_analog_variable_rvalue), args), new Lazy<IParser<CharToken>>(() => Parser.String("array_variable_identifier", true).Text()), new Lazy<IParser<CharToken>>(() => Parser.Char('[', true)), new Lazy<IParser<CharToken>>(() => analog_expression.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.Char(']', true)), new Lazy<IParser<CharToken>>(() => array_analog_variable_rvalue_many.Value.Many(greedy: true).Token()))
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("array_analog_variable_rvalue#1", (args) => CreateSyntaxNode(true, nameof(array_analog_variable_rvalue), args), new Lazy<IParser<CharToken>>(() => Parser.String("array_variable_identifier", true).Text()))
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("array_analog_variable_rvalue#2", (args) => CreateSyntaxNode(true, nameof(array_analog_variable_rvalue), args), new Lazy<IParser<CharToken>>(() => assignment_pattern.Value.Token())))).Named("array_analog_variable_rvalue"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> array_analog_variable_rvalue_many =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("array_analog_variable_rvalue_many#0", (args) => CreateSyntaxNode(true, nameof(array_analog_variable_rvalue_many), args), new Lazy<IParser<CharToken>>(() => Parser.Char('[', true)), new Lazy<IParser<CharToken>>(() => analog_expression.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.Char(']', true))).Named("array_analog_variable_rvalue_many"));
@@ -2759,7 +2764,7 @@ namespace CFGToolkit.Parsers.VerilogAMS
 
         public static Lazy<IParser<CharToken, SyntaxNode>> net_lvalue =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("net_lvalue#0", (args) => CreateSyntaxNode(true, nameof(net_lvalue), args), new Lazy<IParser<CharToken>>(() => hierarchical_net_identifier.Value.Token()), new Lazy<IParser<CharToken>>(() => net_lvalue_optional.Value.Optional(greedy: true).Token()))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("net_lvalue#1", (args) => CreateSyntaxNode(true, nameof(net_lvalue), args), new Lazy<IParser<CharToken>>(() => Parser.Char('{', true)), new Lazy<IParser<CharToken>>(() => net_lvalue.Value.Token()), new Lazy<IParser<CharToken>>(() => net_lvalue_many.Value.Many(greedy: true).Token()), new Lazy<IParser<CharToken>>(() => Parser.Char('}', true)))).Named("net_lvalue"));
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("net_lvalue#1", (args) => CreateSyntaxNode(true, nameof(net_lvalue), args), new Lazy<IParser<CharToken>>(() => Parser.Char('{', true)), new Lazy<IParser<CharToken>>(() => net_lvalue.Value.Token()), new Lazy<IParser<CharToken>>(() => net_lvalue_many.Value.Many(greedy: true).Token()), new Lazy<IParser<CharToken>>(() => Parser.Char('}', true)))).Named("net_lvalue"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> net_lvalue_optional =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("net_lvalue_optional#0", (args) => CreateSyntaxNode(true, nameof(net_lvalue_optional), args), new Lazy<IParser<CharToken>>(() => constant_expression_lazy.Value.Many(greedy: false).Token()), new Lazy<IParser<CharToken>>(() => Parser.Char('[', true)), new Lazy<IParser<CharToken>>(() => constant_range_expression.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.Char(']', true))).Named("net_lvalue_optional"));
@@ -2772,7 +2777,7 @@ namespace CFGToolkit.Parsers.VerilogAMS
 
         public static Lazy<IParser<CharToken, SyntaxNode>> variable_lvalue =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("variable_lvalue#0", (args) => CreateSyntaxNode(true, nameof(variable_lvalue), args), new Lazy<IParser<CharToken>>(() => hierarchical_variable_identifier.Value.Token()), new Lazy<IParser<CharToken>>(() => variable_lvalue_optional.Value.Optional(greedy: true).Token()))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("variable_lvalue#1", (args) => CreateSyntaxNode(true, nameof(variable_lvalue), args), new Lazy<IParser<CharToken>>(() => Parser.Char('{', true)), new Lazy<IParser<CharToken>>(() => variable_lvalue.Value.Token()), new Lazy<IParser<CharToken>>(() => variable_lvalue_many.Value.Many(greedy: true).Token()), new Lazy<IParser<CharToken>>(() => Parser.Char('}', true)))).Named("variable_lvalue"));
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("variable_lvalue#1", (args) => CreateSyntaxNode(true, nameof(variable_lvalue), args), new Lazy<IParser<CharToken>>(() => Parser.Char('{', true)), new Lazy<IParser<CharToken>>(() => variable_lvalue.Value.Token()), new Lazy<IParser<CharToken>>(() => variable_lvalue_many.Value.Many(greedy: true).Token()), new Lazy<IParser<CharToken>>(() => Parser.Char('}', true)))).Named("variable_lvalue"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> variable_lvalue_optional =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("variable_lvalue_optional#0", (args) => CreateSyntaxNode(true, nameof(variable_lvalue_optional), args), new Lazy<IParser<CharToken>>(() => lazy_expressions.Value.Many(greedy: false).Token()), new Lazy<IParser<CharToken>>(() => Parser.Char('[', true)), new Lazy<IParser<CharToken>>(() => range_expression.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.Char(']', true))).Named("variable_lvalue_optional"));
@@ -2811,21 +2816,21 @@ namespace CFGToolkit.Parsers.VerilogAMS
 
         public static Lazy<IParser<CharToken, SyntaxNode>> binary_operator_0 =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("binary_operator_0#0", (args) => CreateSyntaxNode(true, nameof(binary_operator_0), args), new Lazy<IParser<CharToken>>(() => Parser.Char('+', true)))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("binary_operator_0#1", (args) => CreateSyntaxNode(true, nameof(binary_operator_0), args), new Lazy<IParser<CharToken>>(() => Parser.Char('-', true)))).Named("binary_operator_0"));
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("binary_operator_0#1", (args) => CreateSyntaxNode(true, nameof(binary_operator_0), args), new Lazy<IParser<CharToken>>(() => Parser.Char('-', true)))).Named("binary_operator_0"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> binary_operator_1 =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("binary_operator_1#0", (args) => CreateSyntaxNode(true, nameof(binary_operator_1), args), new Lazy<IParser<CharToken>>(() => Parser.String("**", true).Text())).Named("binary_operator_1"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> binary_operator_2 =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("binary_operator_2#0", (args) => CreateSyntaxNode(true, nameof(binary_operator_2), args), new Lazy<IParser<CharToken>>(() => Parser.Char('*', true)))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("binary_operator_2#1", (args) => CreateSyntaxNode(true, nameof(binary_operator_2), args), new Lazy<IParser<CharToken>>(() => Parser.Char('/', true)))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("binary_operator_2#2", (args) => CreateSyntaxNode(true, nameof(binary_operator_2), args), new Lazy<IParser<CharToken>>(() => Parser.Char('%', true))))).Named("binary_operator_2"));
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("binary_operator_2#1", (args) => CreateSyntaxNode(true, nameof(binary_operator_2), args), new Lazy<IParser<CharToken>>(() => Parser.Char('/', true)))
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("binary_operator_2#2", (args) => CreateSyntaxNode(true, nameof(binary_operator_2), args), new Lazy<IParser<CharToken>>(() => Parser.Char('%', true))))).Named("binary_operator_2"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> binary_operator_3 =
-          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("binary_operator_3#0", (args) => CreateSyntaxNode(true, nameof(binary_operator_3), args), new Lazy<IParser<CharToken>>(() => Parser.String("<<", true).Text()))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("binary_operator_3#1", (args) => CreateSyntaxNode(true, nameof(binary_operator_3), args), new Lazy<IParser<CharToken>>(() => Parser.String(">>", true).Text()))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("binary_operator_3#2", (args) => CreateSyntaxNode(true, nameof(binary_operator_3), args), new Lazy<IParser<CharToken>>(() => Parser.String("<<<", true).Text()))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("binary_operator_3#3", (args) => CreateSyntaxNode(true, nameof(binary_operator_3), args), new Lazy<IParser<CharToken>>(() => Parser.String(">>>", true).Text()))))).Named("binary_operator_3"));
+          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("binary_operator_3#0", (args) => CreateSyntaxNode(true, nameof(binary_operator_3), args), new Lazy<IParser<CharToken>>(() => Parser.String("<<<", true).Text()))
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("binary_operator_3#1", (args) => CreateSyntaxNode(true, nameof(binary_operator_3), args), new Lazy<IParser<CharToken>>(() => Parser.String(">>>", true).Text()))
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("binary_operator_3#2", (args) => CreateSyntaxNode(true, nameof(binary_operator_3), args), new Lazy<IParser<CharToken>>(() => Parser.String("<<", true).Text()))
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("binary_operator_3#3", (args) => CreateSyntaxNode(true, nameof(binary_operator_3), args), new Lazy<IParser<CharToken>>(() => Parser.String(">>", true).Text()))))).Named("binary_operator_3"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> binary_operator_4 =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("binary_operator_4#0", (args) => CreateSyntaxNode(true, nameof(binary_operator_4), args), new Lazy<IParser<CharToken>>(() => Parser.String("<=", true).Text()))
@@ -2834,18 +2839,18 @@ namespace CFGToolkit.Parsers.VerilogAMS
            .XOr(Parser.Sequence<CharToken, SyntaxNode>("binary_operator_4#3", (args) => CreateSyntaxNode(true, nameof(binary_operator_4), args), new Lazy<IParser<CharToken>>(() => Parser.Char('>', true)))))).Named("binary_operator_4"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> binary_operator_5 =
-          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("binary_operator_5#0", (args) => CreateSyntaxNode(true, nameof(binary_operator_5), args), new Lazy<IParser<CharToken>>(() => Parser.String("==", true).Text()))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("binary_operator_5#1", (args) => CreateSyntaxNode(true, nameof(binary_operator_5), args), new Lazy<IParser<CharToken>>(() => Parser.String("!=", true).Text()))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("binary_operator_5#2", (args) => CreateSyntaxNode(true, nameof(binary_operator_5), args), new Lazy<IParser<CharToken>>(() => Parser.String("===", true).Text()))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("binary_operator_5#3", (args) => CreateSyntaxNode(true, nameof(binary_operator_5), args), new Lazy<IParser<CharToken>>(() => Parser.String("!==", true).Text()))))).Named("binary_operator_5"));
+          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("binary_operator_5#0", (args) => CreateSyntaxNode(true, nameof(binary_operator_5), args), new Lazy<IParser<CharToken>>(() => Parser.String("===", true).Text()))
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("binary_operator_5#1", (args) => CreateSyntaxNode(true, nameof(binary_operator_5), args), new Lazy<IParser<CharToken>>(() => Parser.String("!==", true).Text()))
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("binary_operator_5#2", (args) => CreateSyntaxNode(true, nameof(binary_operator_5), args), new Lazy<IParser<CharToken>>(() => Parser.String("==", true).Text()))
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("binary_operator_5#3", (args) => CreateSyntaxNode(true, nameof(binary_operator_5), args), new Lazy<IParser<CharToken>>(() => Parser.String("!=", true).Text()))))).Named("binary_operator_5"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> binary_operator_6 =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("binary_operator_6#0", (args) => CreateSyntaxNode(true, nameof(binary_operator_6), args), new Lazy<IParser<CharToken>>(() => Parser.Char('&', true))).Named("binary_operator_6"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> binary_operator_7 =
-          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("binary_operator_7#0", (args) => CreateSyntaxNode(true, nameof(binary_operator_7), args), new Lazy<IParser<CharToken>>(() => Parser.Char('^', true)))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("binary_operator_7#1", (args) => CreateSyntaxNode(true, nameof(binary_operator_7), args), new Lazy<IParser<CharToken>>(() => Parser.String("^~", true).Text()))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("binary_operator_7#2", (args) => CreateSyntaxNode(true, nameof(binary_operator_7), args), new Lazy<IParser<CharToken>>(() => Parser.String("~^", true).Text())))).Named("binary_operator_7"));
+          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("binary_operator_7#0", (args) => CreateSyntaxNode(true, nameof(binary_operator_7), args), new Lazy<IParser<CharToken>>(() => Parser.String("^~", true).Text()))
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("binary_operator_7#1", (args) => CreateSyntaxNode(true, nameof(binary_operator_7), args), new Lazy<IParser<CharToken>>(() => Parser.String("~^", true).Text()))
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("binary_operator_7#2", (args) => CreateSyntaxNode(true, nameof(binary_operator_7), args), new Lazy<IParser<CharToken>>(() => Parser.Char('^', true))))).Named("binary_operator_7"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> binary_operator_8 =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("binary_operator_8#0", (args) => CreateSyntaxNode(true, nameof(binary_operator_8), args), new Lazy<IParser<CharToken>>(() => Parser.Char('|', true))).Named("binary_operator_8"));
@@ -2880,13 +2885,10 @@ namespace CFGToolkit.Parsers.VerilogAMS
 
         public static Lazy<IParser<CharToken, SyntaxNode>> number =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("number#0", (args) => CreateSyntaxNode(false, nameof(number), args), new Lazy<IParser<CharToken>>(() => binary_number.Value))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("number#1", (args) => CreateSyntaxNode(false, nameof(number), args), new Lazy<IParser<CharToken>>(() => hex_number.Value))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("number#2", (args) => CreateSyntaxNode(false, nameof(number), args), new Lazy<IParser<CharToken>>(() => octal_number.Value))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("number#3", (args) => CreateSyntaxNode(false, nameof(number), args), new Lazy<IParser<CharToken>>(() => real_number_of_decimal.Value))))).Named("number"));
-
-        public static Lazy<IParser<CharToken, SyntaxNode>> real_number_of_decimal =
-          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("real_number_of_decimal#0", (args) => CreateSyntaxNode(false, nameof(real_number_of_decimal), args), new Lazy<IParser<CharToken>>(() => real_number.Value))
-           .XOr(Parser.Sequence<CharToken, SyntaxNode>("real_number_of_decimal#1", (args) => CreateSyntaxNode(false, nameof(real_number_of_decimal), args), new Lazy<IParser<CharToken>>(() => decimal_number.Value))).Named("real_number_of_decimal"));
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("number#1", (args) => CreateSyntaxNode(false, nameof(number), args), new Lazy<IParser<CharToken>>(() => hex_number.Value))
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("number#2", (args) => CreateSyntaxNode(false, nameof(number), args), new Lazy<IParser<CharToken>>(() => octal_number.Value))
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("number#3", (args) => CreateSyntaxNode(false, nameof(number), args), new Lazy<IParser<CharToken>>(() => real_number.Value))
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("number#4", (args) => CreateSyntaxNode(false, nameof(number), args), new Lazy<IParser<CharToken>>(() => decimal_number.Value)))))).Named("number"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> real_number =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("real_number#0", (args) => CreateSyntaxNode(false, nameof(real_number), args), new Lazy<IParser<CharToken>>(() => unsigned_number.Value), new Lazy<IParser<CharToken>>(() => real_number_optional.Value.Optional(greedy: true)), new Lazy<IParser<CharToken>>(() => exp.Value), new Lazy<IParser<CharToken>>(() => sign.Value.Optional(greedy: true).Token()), new Lazy<IParser<CharToken>>(() => unsigned_number.Value))
@@ -2901,20 +2903,20 @@ namespace CFGToolkit.Parsers.VerilogAMS
 
         public static Lazy<IParser<CharToken, SyntaxNode>> exp =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("exp#0", (args) => CreateSyntaxNode(false, nameof(exp), args), new Lazy<IParser<CharToken>>(() => Parser.Char('e', false)))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("exp#1", (args) => CreateSyntaxNode(false, nameof(exp), args), new Lazy<IParser<CharToken>>(() => Parser.Char('E', false)))).Named("exp"));
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("exp#1", (args) => CreateSyntaxNode(false, nameof(exp), args), new Lazy<IParser<CharToken>>(() => Parser.Char('E', false)))).Named("exp"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> scale_factor =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("scale_factor#0", (args) => CreateSyntaxNode(false, nameof(scale_factor), args), new Lazy<IParser<CharToken>>(() => Parser.Char('T', false)))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("scale_factor#1", (args) => CreateSyntaxNode(false, nameof(scale_factor), args), new Lazy<IParser<CharToken>>(() => Parser.Char('G', false)))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("scale_factor#2", (args) => CreateSyntaxNode(false, nameof(scale_factor), args), new Lazy<IParser<CharToken>>(() => Parser.Char('M', false)))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("scale_factor#3", (args) => CreateSyntaxNode(false, nameof(scale_factor), args), new Lazy<IParser<CharToken>>(() => Parser.Char('K', false)))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("scale_factor#4", (args) => CreateSyntaxNode(false, nameof(scale_factor), args), new Lazy<IParser<CharToken>>(() => Parser.Char('k', false)))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("scale_factor#5", (args) => CreateSyntaxNode(false, nameof(scale_factor), args), new Lazy<IParser<CharToken>>(() => Parser.Char('m', false)))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("scale_factor#6", (args) => CreateSyntaxNode(false, nameof(scale_factor), args), new Lazy<IParser<CharToken>>(() => Parser.Char('u', false)))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("scale_factor#7", (args) => CreateSyntaxNode(false, nameof(scale_factor), args), new Lazy<IParser<CharToken>>(() => Parser.Char('n', false)))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("scale_factor#8", (args) => CreateSyntaxNode(false, nameof(scale_factor), args), new Lazy<IParser<CharToken>>(() => Parser.Char('p', false)))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("scale_factor#9", (args) => CreateSyntaxNode(false, nameof(scale_factor), args), new Lazy<IParser<CharToken>>(() => Parser.Char('f', false)))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("scale_factor#10", (args) => CreateSyntaxNode(false, nameof(scale_factor), args), new Lazy<IParser<CharToken>>(() => Parser.Char('a', false))))))))))))).Named("scale_factor"));
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("scale_factor#1", (args) => CreateSyntaxNode(false, nameof(scale_factor), args), new Lazy<IParser<CharToken>>(() => Parser.Char('G', false)))
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("scale_factor#2", (args) => CreateSyntaxNode(false, nameof(scale_factor), args), new Lazy<IParser<CharToken>>(() => Parser.Char('M', false)))
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("scale_factor#3", (args) => CreateSyntaxNode(false, nameof(scale_factor), args), new Lazy<IParser<CharToken>>(() => Parser.Char('K', false)))
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("scale_factor#4", (args) => CreateSyntaxNode(false, nameof(scale_factor), args), new Lazy<IParser<CharToken>>(() => Parser.Char('k', false)))
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("scale_factor#5", (args) => CreateSyntaxNode(false, nameof(scale_factor), args), new Lazy<IParser<CharToken>>(() => Parser.Char('m', false)))
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("scale_factor#6", (args) => CreateSyntaxNode(false, nameof(scale_factor), args), new Lazy<IParser<CharToken>>(() => Parser.Char('u', false)))
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("scale_factor#7", (args) => CreateSyntaxNode(false, nameof(scale_factor), args), new Lazy<IParser<CharToken>>(() => Parser.Char('n', false)))
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("scale_factor#8", (args) => CreateSyntaxNode(false, nameof(scale_factor), args), new Lazy<IParser<CharToken>>(() => Parser.Char('p', false)))
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("scale_factor#9", (args) => CreateSyntaxNode(false, nameof(scale_factor), args), new Lazy<IParser<CharToken>>(() => Parser.Char('f', false)))
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("scale_factor#10", (args) => CreateSyntaxNode(false, nameof(scale_factor), args), new Lazy<IParser<CharToken>>(() => Parser.Char('a', false))))))))))))).Named("scale_factor"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> decimal_number =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("decimal_number#0", (args) => CreateSyntaxNode(false, nameof(decimal_number), args), new Lazy<IParser<CharToken>>(() => size.Value.Optional(greedy: true)), new Lazy<IParser<CharToken>>(() => decimal_base.Value), new Lazy<IParser<CharToken>>(() => unsigned_number.Value))
@@ -2939,7 +2941,7 @@ namespace CFGToolkit.Parsers.VerilogAMS
 
         public static Lazy<IParser<CharToken, SyntaxNode>> sign =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("sign#0", (args) => CreateSyntaxNode(true, nameof(sign), args), new Lazy<IParser<CharToken>>(() => Parser.Char('+', true)))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("sign#1", (args) => CreateSyntaxNode(true, nameof(sign), args), new Lazy<IParser<CharToken>>(() => Parser.Char('-', true)))).Named("sign"));
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("sign#1", (args) => CreateSyntaxNode(true, nameof(sign), args), new Lazy<IParser<CharToken>>(() => Parser.Char('-', true)))).Named("sign"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> size =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("size#0", (args) => CreateSyntaxNode(false, nameof(size), args), new Lazy<IParser<CharToken>>(() => non_zero_unsigned_number.Value)).Named("size"));
@@ -2981,51 +2983,51 @@ namespace CFGToolkit.Parsers.VerilogAMS
 
         public static Lazy<IParser<CharToken, SyntaxNode>> decimal_base =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("decimal_base#0", (args) => CreateSyntaxNode(false, nameof(decimal_base), args), new Lazy<IParser<CharToken>>(() => Parser.Char('\'', false)), new Lazy<IParser<CharToken>>(() => decimal_base_optional.Value.Optional(greedy: true)), new Lazy<IParser<CharToken>>(() => Parser.Char('d', false)))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("decimal_base#1", (args) => CreateSyntaxNode(false, nameof(decimal_base), args), new Lazy<IParser<CharToken>>(() => Parser.Char('\'', false)), new Lazy<IParser<CharToken>>(() => decimal_base_optional_2.Value.Optional(greedy: true)), new Lazy<IParser<CharToken>>(() => Parser.Char('D', false)))).Named("decimal_base"));
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("decimal_base#1", (args) => CreateSyntaxNode(false, nameof(decimal_base), args), new Lazy<IParser<CharToken>>(() => Parser.Char('\'', false)), new Lazy<IParser<CharToken>>(() => decimal_base_optional_2.Value.Optional(greedy: true)), new Lazy<IParser<CharToken>>(() => Parser.Char('D', false)))).Named("decimal_base"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> decimal_base_optional =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("decimal_base_optional#0", (args) => CreateSyntaxNode(false, nameof(decimal_base_optional), args), new Lazy<IParser<CharToken>>(() => Parser.Char('s', false)))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("decimal_base_optional#1", (args) => CreateSyntaxNode(false, nameof(decimal_base_optional), args), new Lazy<IParser<CharToken>>(() => Parser.Char('S', false)))).Named("decimal_base_optional"));
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("decimal_base_optional#1", (args) => CreateSyntaxNode(false, nameof(decimal_base_optional), args), new Lazy<IParser<CharToken>>(() => Parser.Char('S', false)))).Named("decimal_base_optional"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> decimal_base_optional_2 =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("decimal_base_optional_2#0", (args) => CreateSyntaxNode(false, nameof(decimal_base_optional_2), args), new Lazy<IParser<CharToken>>(() => Parser.Char('s', false)))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("decimal_base_optional_2#1", (args) => CreateSyntaxNode(false, nameof(decimal_base_optional_2), args), new Lazy<IParser<CharToken>>(() => Parser.Char('S', false)))).Named("decimal_base_optional_2"));
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("decimal_base_optional_2#1", (args) => CreateSyntaxNode(false, nameof(decimal_base_optional_2), args), new Lazy<IParser<CharToken>>(() => Parser.Char('S', false)))).Named("decimal_base_optional_2"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> binary_base =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("binary_base#0", (args) => CreateSyntaxNode(false, nameof(binary_base), args), new Lazy<IParser<CharToken>>(() => Parser.Char('\'', false)), new Lazy<IParser<CharToken>>(() => binary_base_optional.Value.Optional(greedy: true)), new Lazy<IParser<CharToken>>(() => Parser.Char('b', false)))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("binary_base#1", (args) => CreateSyntaxNode(false, nameof(binary_base), args), new Lazy<IParser<CharToken>>(() => Parser.Char('\'', false)), new Lazy<IParser<CharToken>>(() => binary_base_optional_2.Value.Optional(greedy: true)), new Lazy<IParser<CharToken>>(() => Parser.Char('B', false)))).Named("binary_base"));
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("binary_base#1", (args) => CreateSyntaxNode(false, nameof(binary_base), args), new Lazy<IParser<CharToken>>(() => Parser.Char('\'', false)), new Lazy<IParser<CharToken>>(() => binary_base_optional_2.Value.Optional(greedy: true)), new Lazy<IParser<CharToken>>(() => Parser.Char('B', false)))).Named("binary_base"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> binary_base_optional =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("binary_base_optional#0", (args) => CreateSyntaxNode(false, nameof(binary_base_optional), args), new Lazy<IParser<CharToken>>(() => Parser.Char('s', false)))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("binary_base_optional#1", (args) => CreateSyntaxNode(false, nameof(binary_base_optional), args), new Lazy<IParser<CharToken>>(() => Parser.Char('S', false)))).Named("binary_base_optional"));
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("binary_base_optional#1", (args) => CreateSyntaxNode(false, nameof(binary_base_optional), args), new Lazy<IParser<CharToken>>(() => Parser.Char('S', false)))).Named("binary_base_optional"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> binary_base_optional_2 =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("binary_base_optional_2#0", (args) => CreateSyntaxNode(false, nameof(binary_base_optional_2), args), new Lazy<IParser<CharToken>>(() => Parser.Char('s', false)))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("binary_base_optional_2#1", (args) => CreateSyntaxNode(false, nameof(binary_base_optional_2), args), new Lazy<IParser<CharToken>>(() => Parser.Char('S', false)))).Named("binary_base_optional_2"));
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("binary_base_optional_2#1", (args) => CreateSyntaxNode(false, nameof(binary_base_optional_2), args), new Lazy<IParser<CharToken>>(() => Parser.Char('S', false)))).Named("binary_base_optional_2"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> octal_base =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("octal_base#0", (args) => CreateSyntaxNode(false, nameof(octal_base), args), new Lazy<IParser<CharToken>>(() => Parser.Char('\'', false)), new Lazy<IParser<CharToken>>(() => octal_base_optional.Value.Optional(greedy: true)), new Lazy<IParser<CharToken>>(() => Parser.Char('o', false)))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("octal_base#1", (args) => CreateSyntaxNode(false, nameof(octal_base), args), new Lazy<IParser<CharToken>>(() => Parser.Char('\'', false)), new Lazy<IParser<CharToken>>(() => octal_base_optional_2.Value.Optional(greedy: true)), new Lazy<IParser<CharToken>>(() => Parser.Char('O', false)))).Named("octal_base"));
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("octal_base#1", (args) => CreateSyntaxNode(false, nameof(octal_base), args), new Lazy<IParser<CharToken>>(() => Parser.Char('\'', false)), new Lazy<IParser<CharToken>>(() => octal_base_optional_2.Value.Optional(greedy: true)), new Lazy<IParser<CharToken>>(() => Parser.Char('O', false)))).Named("octal_base"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> octal_base_optional =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("octal_base_optional#0", (args) => CreateSyntaxNode(false, nameof(octal_base_optional), args), new Lazy<IParser<CharToken>>(() => Parser.Char('s', false)))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("octal_base_optional#1", (args) => CreateSyntaxNode(false, nameof(octal_base_optional), args), new Lazy<IParser<CharToken>>(() => Parser.Char('S', false)))).Named("octal_base_optional"));
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("octal_base_optional#1", (args) => CreateSyntaxNode(false, nameof(octal_base_optional), args), new Lazy<IParser<CharToken>>(() => Parser.Char('S', false)))).Named("octal_base_optional"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> octal_base_optional_2 =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("octal_base_optional_2#0", (args) => CreateSyntaxNode(false, nameof(octal_base_optional_2), args), new Lazy<IParser<CharToken>>(() => Parser.Char('s', false)))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("octal_base_optional_2#1", (args) => CreateSyntaxNode(false, nameof(octal_base_optional_2), args), new Lazy<IParser<CharToken>>(() => Parser.Char('S', false)))).Named("octal_base_optional_2"));
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("octal_base_optional_2#1", (args) => CreateSyntaxNode(false, nameof(octal_base_optional_2), args), new Lazy<IParser<CharToken>>(() => Parser.Char('S', false)))).Named("octal_base_optional_2"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> hex_base =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("hex_base#0", (args) => CreateSyntaxNode(false, nameof(hex_base), args), new Lazy<IParser<CharToken>>(() => Parser.Char('\'', false)), new Lazy<IParser<CharToken>>(() => hex_base_optional.Value.Optional(greedy: true)), new Lazy<IParser<CharToken>>(() => Parser.Char('h', false)))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("hex_base#1", (args) => CreateSyntaxNode(false, nameof(hex_base), args), new Lazy<IParser<CharToken>>(() => Parser.Char('\'', false)), new Lazy<IParser<CharToken>>(() => hex_base_optional_2.Value.Optional(greedy: true)), new Lazy<IParser<CharToken>>(() => Parser.Char('H', false)))).Named("hex_base"));
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("hex_base#1", (args) => CreateSyntaxNode(false, nameof(hex_base), args), new Lazy<IParser<CharToken>>(() => Parser.Char('\'', false)), new Lazy<IParser<CharToken>>(() => hex_base_optional_2.Value.Optional(greedy: true)), new Lazy<IParser<CharToken>>(() => Parser.Char('H', false)))).Named("hex_base"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> hex_base_optional =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("hex_base_optional#0", (args) => CreateSyntaxNode(false, nameof(hex_base_optional), args), new Lazy<IParser<CharToken>>(() => Parser.Char('s', false)))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("hex_base_optional#1", (args) => CreateSyntaxNode(false, nameof(hex_base_optional), args), new Lazy<IParser<CharToken>>(() => Parser.Char('S', false)))).Named("hex_base_optional"));
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("hex_base_optional#1", (args) => CreateSyntaxNode(false, nameof(hex_base_optional), args), new Lazy<IParser<CharToken>>(() => Parser.Char('S', false)))).Named("hex_base_optional"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> hex_base_optional_2 =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("hex_base_optional_2#0", (args) => CreateSyntaxNode(false, nameof(hex_base_optional_2), args), new Lazy<IParser<CharToken>>(() => Parser.Char('s', false)))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("hex_base_optional_2#1", (args) => CreateSyntaxNode(false, nameof(hex_base_optional_2), args), new Lazy<IParser<CharToken>>(() => Parser.Char('S', false)))).Named("hex_base_optional_2"));
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("hex_base_optional_2#1", (args) => CreateSyntaxNode(false, nameof(hex_base_optional_2), args), new Lazy<IParser<CharToken>>(() => Parser.Char('S', false)))).Named("hex_base_optional_2"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> non_zero_decimal_digit =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("non_zero_decimal_digit#0", (args) => CreateSyntaxNode(false, nameof(non_zero_decimal_digit), args), new Lazy<IParser<CharToken>>(() => Parser.Char('1', false)))
@@ -3275,7 +3277,7 @@ namespace CFGToolkit.Parsers.VerilogAMS
 
         public static Lazy<IParser<CharToken, SyntaxNode>> identifier =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("identifier#0", (args) => CreateSyntaxNode(false, nameof(identifier), args), new Lazy<IParser<CharToken>>(() => simple_identifier.Value))
-           .Or(Parser.Sequence<CharToken, SyntaxNode>("identifier#1", (args) => CreateSyntaxNode(false, nameof(identifier), args), new Lazy<IParser<CharToken>>(() => escaped_identifier.Value.Token()))).Named("identifier"));
+           .XOr(Parser.Sequence<CharToken, SyntaxNode>("identifier#1", (args) => CreateSyntaxNode(false, nameof(identifier), args), new Lazy<IParser<CharToken>>(() => escaped_identifier.Value.Token()))).Named("identifier"));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> inout_port_identifier =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("inout_port_identifier#0", (args) => CreateSyntaxNode(false, nameof(inout_port_identifier), args), new Lazy<IParser<CharToken>>(() => identifier.Value)).Named("inout_port_identifier"));
@@ -3415,86 +3417,5 @@ namespace CFGToolkit.Parsers.VerilogAMS
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("paramset_constant_expression_prim#0", (args) => CreateSyntaxNode(true, nameof(paramset_constant_expression_prim), args), new Lazy<IParser<CharToken>>(() => binary_operator.Value.Token()), new Lazy<IParser<CharToken>>(() => attribute_instance.Value.Many(greedy: true).Token()), new Lazy<IParser<CharToken>>(() => paramset_constant_expression.Value.Token()), new Lazy<IParser<CharToken>>(() => paramset_constant_expression_prim.Value.Token()))
            .XOr(Parser.Sequence<CharToken, SyntaxNode>("paramset_constant_expression_prim#1", (args) => CreateSyntaxNode(true, nameof(paramset_constant_expression_prim), args), new Lazy<IParser<CharToken>>(() => Parser.Char('?', true)), new Lazy<IParser<CharToken>>(() => attribute_instance.Value.Many(greedy: true).Token()), new Lazy<IParser<CharToken>>(() => paramset_constant_expression.Value.Token()), new Lazy<IParser<CharToken>>(() => Parser.Char(':', true)), new Lazy<IParser<CharToken>>(() => paramset_constant_expression.Value.Token()), new Lazy<IParser<CharToken>>(() => paramset_constant_expression_prim.Value.Token()))
            .XOr(Parser.Sequence<CharToken, SyntaxNode>("paramset_constant_expression_prim#2", (args) => CreateSyntaxNode(true, nameof(paramset_constant_expression_prim), args), new Lazy<IParser<CharToken>>(() => Parser.Return(string.Empty))))).Named("paramset_constant_expression_prim"));
-
-        public static Func<bool, string, (string valueParserName, object value)[], SyntaxNode> CreateSyntaxNode =
-        (tokenize, name, args) => {
-            var result = new (string valueParserName, object value)[args.Length];
-            for (var i = 0; i < args.Length; i++)
-            {
-                var res = args[i].value;
-
-                if (res is IOption<object> c)
-                {
-                    result[i].value = CreateOption(c.GetOrDefault());
-                }
-                else
-                {
-                    result[i].value = res;
-                }
-
-                result[i].valueParserName = args[i].valueParserName;
-            }
-            return CreateNode(name, tokenize, result);
-        };
-
-        public static SyntaxNode CreateNode(string name, bool tokenize, (string valueParserName, object value)[] args)
-        {
-            var node = new SyntaxNode(name);
-
-            if (tokenize)
-            {
-                node.Attributes["tokenize"] = "true";
-            }
-
-            foreach (var item in args)
-            {
-                var child = item.value;
-
-                if (child is string s && !string.IsNullOrEmpty(s))
-                {
-                    node.Children.Add(new SyntaxToken { Value = child.ToString(), Name = item.valueParserName, Parent = node });
-                }
-                else if (child is char c)
-                {
-                    node.Children.Add(new SyntaxToken { Value = c.ToString(), Name = item.valueParserName, Parent = node });
-                }
-                else if (child is SyntaxNode a)
-                {
-                    a.Parent = node;
-                    node.Children.Add(a);
-                }
-                else if (child is IEnumerable<ISyntaxElement> e)
-                {
-                    node.Children.Add(new SyntaxNodeMany(item.valueParserName, e) { Parent = node });
-                }
-                else if (child is SyntaxNodeOption opt)
-                {
-                    opt.Name = item.valueParserName;
-                    opt.Parent = node;
-                    node.Children.Add(opt);
-                }
-            }
-            return node;
-        }
-
-        public static object CreateOption(object inside)
-        {
-            if (inside is ISyntaxElement element)
-            {
-                return new SyntaxNodeOption { Inside = element };
-            }
-
-            if (inside is string text)
-            {
-                return new SyntaxNodeOption { Inside = new SyntaxToken() { Value = text } };
-            }
-
-            if (inside is char c)
-            {
-                return new SyntaxNodeOption { Inside = new SyntaxToken() { Value = c.ToString() } };
-            }
-
-            return null;
-        }
     }
 }
