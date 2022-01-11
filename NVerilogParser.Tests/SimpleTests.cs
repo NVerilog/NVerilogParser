@@ -1,5 +1,4 @@
 ﻿using CFGToolkit.ParserCombinator;
-using CFGToolkit.Parsers.VerilogAMS;
 using Xunit;
 
 namespace NVerilogParser.Tests

@@ -1,7 +1,6 @@
 ﻿using CFGToolkit.AST;
 using CFGToolkit.ParserCombinator;
 using CFGToolkit.ParserCombinator.Input;
-using CFGToolkit.Parsers.VerilogAMS;
 using NVerilogParser.Lexer;
 using System;
 using System.Text.RegularExpressions;
@@ -23,11 +22,6 @@ namespace NVerilogParser
             return TryParse(Parsers.source_text.Value.End(), txt);
         }
 
-        public Task<IUnionResult<VerilogToken>> TryTokenParse(string txt)
-        {
-            return TryParse(TokenParsers.source_text.Value.End(), txt);
-        }
-
         public async Task<IUnionResult<CharToken>> TryParse(IParser<CharToken, SyntaxNode> parser, string txt)
         {
             var prepResult = await Preprocessor.DoPreprocessing(txt);
@@ -42,23 +36,6 @@ namespace NVerilogParser
             HackOrderOfDefinitions(state.VerilogSymbolTable, prepResult.Text);
 
             var result = parser.TryParse(tokens, state);
-            return result;
-        }
-
-        public async Task<IUnionResult<NVerilogParser.Lexer.VerilogToken>> TryParse(IParser<NVerilogParser.Lexer.VerilogToken, SyntaxNode> parser, string txt)
-        {
-            var prepResult = await Preprocessor.DoPreprocessing(txt);
-
-            var tokenLexer = new Lexer.VerilogTokenLexer();
-            var tokenss = tokenLexer.GetTokens(prepResult.Text);
-
-            var state = new VerilogParserState<NVerilogParser.Lexer.VerilogToken>();
-            state.BeforeParseActions = VerilogTokenParserActions.BeforeActions;
-            state.AfterParseActions = VerilogTokenParserActions.AfterActions;
-
-            HackOrderOfDefinitions(state.VerilogSymbolTable, prepResult.Text);
-
-            var result = parser.TryParse(tokenss, state);
             return result;
         }
 

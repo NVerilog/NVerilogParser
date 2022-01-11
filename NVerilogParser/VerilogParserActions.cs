@@ -264,7 +264,7 @@ namespace NVerilogParser
             Parsers.genvar_declaration.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>("module_declaration", "genvar_identifier", (obj, scope) => obj.GetValue<SyntaxNode>().GetNodes("genvar_identifier", DefaultLookupDepth).Select(node => node.Text())));
             Parsers.parameter_declaration.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>(new string[] { "paramset_declaration", "module_declaration" }, "parameter_identifier", (obj, scope) => obj.GetValue<SyntaxNode>().GetNodes("parameter_identifier", DefaultLookupDepth).Select(node => node.Text())));
 
-            Parsers.specparam_declaration.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>(new string[] { "module_declaration" }, "specparam_identifier", (obj, scope) => obj.GetValue<SyntaxNode>().GetNodes("specparam_identifier", DefaultLookupDepth).Select(node => node.Text())));
+            Parsers.specparam_declaration.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>(new string[] { "module_declaration" }, "specparam_identifier", (obj, scope) => obj.GetValue<SyntaxNode>().GetNodes("specparam_identifier", 5 * DefaultLookupDepth).Select(node => node.Text())));
 
             Parsers.aliasparam_declaration.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>(new string[] { "source_text" }, "parameter_identifier", (obj, scope) => obj.GetValue<SyntaxNode>().GetNodes("parameter_identifier", DefaultLookupDepth).Select(node => node.Text())));
             Parsers.local_parameter_declaration.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>(new string[] { "module_declaration" }, "local_parameter_identifier", (obj, scope) => obj.GetValue<SyntaxNode>().GetNodes("parameter_identifier", DefaultLookupDepth).Select(node => node.Text())));
@@ -297,9 +297,9 @@ namespace NVerilogParser
             Parsers.real_declaration.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>("module_declaration", "real_identifier", (obj, scope) => obj.GetValue<SyntaxNode>().GetNodes("real_identifier", DefaultLookupDepth).Select(node => node.Text())));
             Parsers.integer_declaration.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>("module_declaration", "integer_identifier", (obj, scope) => obj.GetValue<SyntaxNode>().GetNodes("variable_identifier", DefaultLookupDepth).Select(node => node.Text())));
             Parsers.event_declaration.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>("module_declaration", "event_identifier", (obj, scope) => obj.GetValue<SyntaxNode>().GetNodes("event_identifier", DefaultLookupDepth).Select(node => node.Text())));
-            Parsers.specparam_identifier.Value.After(VerilogParserActionTypes.Enforce<SyntaxNode>(new[] { "specparam_identifier" }, new[] { "specparam_declaration" }, (obj, scope) => obj.Text()));
+            Parsers.specparam_identifier.Value.After(VerilogParserActionTypes.Enforce<SyntaxNode>(new[] { "specparam_identifier" }, new[] { "specparam_declaration" }, (obj, scope) => obj.Text(), int.MaxValue));
 
-            Parsers.paramset_identifier.Value.After(VerilogParserActionTypes.Enforce<SyntaxNode>(new[] { "paramset_identifier" }, new[] { "paramset_declaration" }, (obj, scope) => obj.Text()));
+            Parsers.paramset_identifier.Value.After(VerilogParserActionTypes.Enforce<SyntaxNode>(new[] { "paramset_identifier" }, new[] { "paramset_declaration" }, (obj, scope) => obj.Text(), DefaultLookupDepth));
             Parsers.paramset_identifier.Value.After(VerilogParserActionTypes.Not<SyntaxNode>((state, input, scope, value) =>
             {
                 return state.VerilogSymbolTable.HasDefinition("module_identifier", value);
@@ -319,8 +319,8 @@ namespace NVerilogParser
                 return state.VerilogSymbolTable.HasDefinition("net_identifier", value);
 
             }, new[] { "list_of_net_identifiers", "list_of_net_decl_assignments" }, (obj, scope) => obj.Text(), DefaultLookupDepth));
-            Parsers.genvar_identifier.Value.After(VerilogParserActionTypes.Enforce<SyntaxNode>(new[] { "genvar_identifier" }, new[] { "genvar_declaration" }, (obj, scope) => obj.Text()));
-            Parsers.discipline_identifier.Value.After(VerilogParserActionTypes.Enforce<SyntaxNode>(new[] { "discipline_identifier" }, new[] { "discipline_declaration" }, (obj, scope) => obj.Text()));
+            Parsers.genvar_identifier.Value.After(VerilogParserActionTypes.Enforce<SyntaxNode>(new[] { "genvar_identifier" }, new[] { "genvar_declaration" }, (obj, scope) => obj.Text(), 5 * DefaultLookupDepth));
+            Parsers.discipline_identifier.Value.After(VerilogParserActionTypes.Enforce<SyntaxNode>(new[] { "discipline_identifier" }, new[] { "discipline_declaration" }, (obj, scope) => obj.Text(), DefaultLookupDepth));
 
 
             Parsers.function_identifier.Value.After(VerilogParserActionTypes.Enforce<SyntaxNode>((value, state, scope) =>
@@ -347,7 +347,7 @@ namespace NVerilogParser
 
             }, new string[] { }, (obj, scope) => obj.Text(), DefaultLookupDepth));
 
-            Parsers.parameter_identifier.Value.After(VerilogParserActionTypes.Enforce<SyntaxNode>(new[] { "parameter_identifier", "local_parameter_identifier" }, new[] { "local_parameter_declaration", "aliasparam_declaration", "param_assignment", "parameter_declaration", "list_of_parameter_assignments" }, (obj, scope) => obj.Text()));
+            Parsers.parameter_identifier.Value.After(VerilogParserActionTypes.Enforce<SyntaxNode>(new[] { "parameter_identifier", "local_parameter_identifier" }, new[] { "local_parameter_declaration", "aliasparam_declaration", "param_assignment", "parameter_declaration", "list_of_parameter_assignments" }, (obj, scope) => obj.Text(), int.MaxValue));
             Parsers.system_parameter_identifier.Value.After(VerilogParserActionTypes.Limit<SyntaxNode>(new[] { "$mfactor", "$xposition" }, (obj, scope) => obj.Text()));
 
 

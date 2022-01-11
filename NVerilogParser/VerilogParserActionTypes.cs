@@ -94,7 +94,7 @@ namespace NVerilogParser
             };
         }
 
-        public static Action<AfterArgs<CharToken>> Enforce<TResult>(string[] dataSetName, string[] parents, Func<IUnionResultValue<CharToken>, IParserCallStack<CharToken>, string> factory, int depth = int.MaxValue)
+        public static Action<AfterArgs<CharToken>> Enforce<TResult>(string[] dataSetName, string[] parents, Func<IUnionResultValue<CharToken>, IParserCallStack<CharToken>, string> factory, int depth)
         {
             return (args) =>
             {
@@ -215,7 +215,7 @@ namespace NVerilogParser
             };
         }
 
-        public static Action<AfterArgs<CharToken>> Collect<TResult>(string destination, string dataSetName, string parent, Func<IUnionResultValue<CharToken>, IParserCallStack<CharToken>, IEnumerable<string>> factory, int depth = int.MaxValue)
+        public static Action<AfterArgs<CharToken>> Collect<TResult>(string destination, string dataSetName, string parent, Func<IUnionResultValue<CharToken>, IParserCallStack<CharToken>, IEnumerable<string>> factory, int depth)
         {
             return (args) =>
             {
