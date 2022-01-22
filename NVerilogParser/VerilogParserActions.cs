@@ -47,11 +47,11 @@ namespace NVerilogParser
 
         static VerilogParserActions()
         {
-            string[] kernel_parameters = { "$vt" };
+            HashSet<string> kernel_parameters = new HashSet<string> { "$vt" };
 
-            string[] buildInFunctions = { "exp", "ln", "abs", "sqrt", "analysis", "$mfactor" };
+            HashSet<string> buildInFunctions = new HashSet<string> { "exp", "ln", "abs", "sqrt", "analysis", "$mfactor" };
 
-            CreateContraints(VerilogKeywords.Values, kernel_parameters, buildInFunctions);
+            CreateContraints(VerilogKeywords.Values.ToArray(), kernel_parameters.ToArray(), buildInFunctions.ToArray());
 
             CreateScopes();
 
@@ -227,10 +227,6 @@ namespace NVerilogParser
 
         private static void CreateContraints(string[] keywords, string[] kernel_parameters, string[] buildInFunctions)
         {
-            var forbidden = new List<string>();
-            forbidden.AddRange(keywords);
-            forbidden.AddRange(buildInFunctions);
-
             Parsers.seq_block.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>("seq_block", "block_identifier", (obj, scope) => obj.GetValue<SyntaxNode>().GetNodes("block_identifier", DefaultLookupDepth).Select(node => node.Text())));
             Parsers.task_declaration.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>("module_declaration", "task_identifier", (obj, scope) => obj.GetValue<SyntaxNode>().GetNodes("task_identifier", DefaultLookupDepth).Select(node => node.Text())));
 
@@ -374,7 +370,7 @@ namespace NVerilogParser
 
             Parsers.identifier.Value.After(VerilogParserActionTypes.Enforce<SyntaxNode>((value, state, scope) =>
             {
-                return !forbidden.Contains(value);
+                return !keywords.Contains(value);
             }, new[] { "attr_name" }, (obj, scope) => obj.Text(), DefaultLookupDepth));
 
             Parsers.variable_identifier.Value.After(VerilogParserActionTypes.Enforce<SyntaxNode>((value, state, scope) =>

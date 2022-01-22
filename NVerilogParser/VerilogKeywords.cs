@@ -1,8 +1,10 @@
-﻿namespace NVerilogParser
+﻿using System.Collections.Generic;
+
+namespace NVerilogParser
 {
     public static class VerilogKeywords
     {
-        public static string[] Values =
+        public static HashSet<string> Values = new HashSet<string>
         {
                 "above",
                 "absdelay",

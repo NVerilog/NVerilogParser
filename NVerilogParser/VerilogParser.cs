@@ -17,21 +17,28 @@ namespace NVerilogParser
             Preprocessor = new Preprocessor.Preprocessor(fileProvider);
         }
 
-        public Task<IUnionResult<CharToken>> TryParse(string txt)
+        public Task<IUnionResult<CharToken>> TryParse(string txt, Action<(int, int)> progress = null)
         {
-            return TryParse(Parsers.source_text.Value.End(), txt);
+            return TryParse(Parsers.source_text.Value.End(), txt, progress);
         }
 
-        public async Task<IUnionResult<CharToken>> TryParse(IParser<CharToken, SyntaxNode> parser, string txt)
+        public async Task<IUnionResult<CharToken>> TryParse(IParser<CharToken, SyntaxNode> parser, string txt, Action<(int, int)> progress = null)
         {
             var prepResult = await Preprocessor.DoPreprocessing(txt);
 
-            var lexer = new Lexer.CharLexer();
+            var lexer = new CharLexer();
             var tokens = lexer.GetTokens(prepResult.Text);
 
             var state = new VerilogParserState<CharToken>();
             state.BeforeParseActions = VerilogParserActions.BeforeActions;
             state.AfterParseActions = VerilogParserActions.AfterActions;
+            state.UpdateHandler = (result) => {
+            
+                if (result)
+                {
+                    progress?.Invoke((state.LastConsumedPosition, tokens.Count));
+                }
+            };
 
             HackOrderOfDefinitions(state.VerilogSymbolTable, prepResult.Text);
 

@@ -20,7 +20,7 @@ namespace NVerilogParser
 
                 if (obj.WasSuccessful)
                 {
-                    var newItems = new List<IUnionResultValue<CharToken>>();
+                    List<IUnionResultValue<CharToken>> newItems = null;
 
                     foreach (var item in obj.Values)
                     {
@@ -30,6 +30,11 @@ namespace NVerilogParser
                         {
                             if (!forbidden.Contains(value))
                             {
+                                if (newItems == null)
+                                {
+                                    newItems = new List<IUnionResultValue<CharToken>>();
+                                }
+
                                 newItems.Add(item);
                             }
                         }
@@ -48,7 +53,7 @@ namespace NVerilogParser
 
                 if (obj.WasSuccessful)
                 {
-                    var newItems = new List<IUnionResultValue<CharToken>>();
+                    List<IUnionResultValue<CharToken>> newItems = null;
 
                     foreach (var item in obj.Values)
                     {
@@ -58,6 +63,10 @@ namespace NVerilogParser
                         {
                             if (!forbidden((VerilogParserState<CharToken>)args.GlobalState, args.Input, callStack, value))
                             {
+                                if (newItems == null)
+                                {
+                                    newItems = new List<IUnionResultValue<CharToken>>();
+                                }
                                 newItems.Add(item);
                             }
                         }
@@ -75,7 +84,7 @@ namespace NVerilogParser
 
                 if (obj.WasSuccessful)
                 {
-                    var newItems = new List<IUnionResultValue<CharToken>>();
+                    List<IUnionResultValue<CharToken>> newItems = null;
 
                     foreach (var item in obj.Values)
                     {
@@ -85,6 +94,10 @@ namespace NVerilogParser
                         {
                             if (allowed.Contains(value))
                             {
+                                if (newItems == null)
+                                {
+                                    newItems = new List<IUnionResultValue<CharToken>>();
+                                }
                                 newItems.Add(item);
                             }
                         }
@@ -109,7 +122,7 @@ namespace NVerilogParser
                         return;
                     }
 
-                    var newItems = new List<IUnionResultValue<CharToken>>();
+                    List<IUnionResultValue<CharToken>> newItems = null;
 
                     foreach (var item in obj.Values)
                     {
@@ -127,6 +140,10 @@ namespace NVerilogParser
 
                         if (!remove)
                         {
+                            if (newItems == null)
+                            {
+                                newItems = new List<IUnionResultValue<CharToken>>();
+                            }
                             newItems.Add(item);
                         }
                     }
@@ -150,12 +167,17 @@ namespace NVerilogParser
                     {
                         return;
                     }
-                    var newItems = new List<IUnionResultValue<CharToken>>();
+                    List<IUnionResultValue<CharToken>> newItems = null;
+
                     foreach (var item in obj.Values)
                     {
                         var value = factory(item, callStack)?.Trim();
                         if (validator(value, state, callStack))
                         {
+                            if (newItems == null)
+                            {
+                                newItems = new List<IUnionResultValue<CharToken>>();
+                            }
                             newItems.Add(item);
                         }
                     }
