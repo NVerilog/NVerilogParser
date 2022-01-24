@@ -2907,22 +2907,12 @@ namespace NVerilogParser
            Parser.Sequence<CharToken, SyntaxNode>("exp#1", (args) => CreateSyntaxNode(false, nameof(exp), args), new Lazy<IParser<CharToken>>(() => Parser.Char('E', false)))));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> scale_factor =
-          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.XOr("scale_factor", Parser.Sequence<CharToken, SyntaxNode>("scale_factor#0", (args) => CreateSyntaxNode(false, nameof(scale_factor), args), new Lazy<IParser<CharToken>>(() => Parser.Char('T', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("scale_factor#1", (args) => CreateSyntaxNode(false, nameof(scale_factor), args), new Lazy<IParser<CharToken>>(() => Parser.Char('G', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("scale_factor#2", (args) => CreateSyntaxNode(false, nameof(scale_factor), args), new Lazy<IParser<CharToken>>(() => Parser.Char('M', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("scale_factor#3", (args) => CreateSyntaxNode(false, nameof(scale_factor), args), new Lazy<IParser<CharToken>>(() => Parser.Char('K', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("scale_factor#4", (args) => CreateSyntaxNode(false, nameof(scale_factor), args), new Lazy<IParser<CharToken>>(() => Parser.Char('k', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("scale_factor#5", (args) => CreateSyntaxNode(false, nameof(scale_factor), args), new Lazy<IParser<CharToken>>(() => Parser.Char('m', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("scale_factor#6", (args) => CreateSyntaxNode(false, nameof(scale_factor), args), new Lazy<IParser<CharToken>>(() => Parser.Char('u', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("scale_factor#7", (args) => CreateSyntaxNode(false, nameof(scale_factor), args), new Lazy<IParser<CharToken>>(() => Parser.Char('n', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("scale_factor#8", (args) => CreateSyntaxNode(false, nameof(scale_factor), args), new Lazy<IParser<CharToken>>(() => Parser.Char('p', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("scale_factor#9", (args) => CreateSyntaxNode(false, nameof(scale_factor), args), new Lazy<IParser<CharToken>>(() => Parser.Char('f', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("scale_factor#10", (args) => CreateSyntaxNode(false, nameof(scale_factor), args), new Lazy<IParser<CharToken>>(() => Parser.Char('a', false)))));
+          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("scale_factor", (args) => CreateSyntaxNode(false, nameof(scale_factor), args), new Lazy<IParser<CharToken>>(() => Parser.Regex("[TGMKkmunpfa]"))));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> decimal_number =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.XOr("decimal_number", Parser.Sequence<CharToken, SyntaxNode>("decimal_number#0", (args) => CreateSyntaxNode(false, nameof(decimal_number), args), new Lazy<IParser<CharToken>>(() => size.Value.Optional(greedy: true)), new Lazy<IParser<CharToken>>(() => decimal_base.Value), new Lazy<IParser<CharToken>>(() => unsigned_number.Value)),
-           Parser.Sequence<CharToken, SyntaxNode>("decimal_number#1", (args) => CreateSyntaxNode(false, nameof(decimal_number), args), new Lazy<IParser<CharToken>>(() => size.Value.Optional(greedy: true)), new Lazy<IParser<CharToken>>(() => decimal_base.Value), new Lazy<IParser<CharToken>>(() => x_digit.Value), new Lazy<IParser<CharToken>>(() => decimal_number_many.Value.Many(greedy: true))),
-           Parser.Sequence<CharToken, SyntaxNode>("decimal_number#2", (args) => CreateSyntaxNode(false, nameof(decimal_number), args), new Lazy<IParser<CharToken>>(() => size.Value.Optional(greedy: true)), new Lazy<IParser<CharToken>>(() => decimal_base.Value), new Lazy<IParser<CharToken>>(() => z_digit.Value), new Lazy<IParser<CharToken>>(() => decimal_number_many_2.Value.Many(greedy: true))),
+           Parser.Sequence<CharToken, SyntaxNode>("decimal_number#1", (args) => CreateSyntaxNode(false, nameof(decimal_number), args), new Lazy<IParser<CharToken>>(() => size.Value.Optional(greedy: true)), new Lazy<IParser<CharToken>>(() => decimal_base.Value), new Lazy<IParser<CharToken>>(() => Parser.String("x_digit", false)), new Lazy<IParser<CharToken>>(() => decimal_number_many.Value.Many(greedy: true))),
+           Parser.Sequence<CharToken, SyntaxNode>("decimal_number#2", (args) => CreateSyntaxNode(false, nameof(decimal_number), args), new Lazy<IParser<CharToken>>(() => size.Value.Optional(greedy: true)), new Lazy<IParser<CharToken>>(() => decimal_base.Value), new Lazy<IParser<CharToken>>(() => Parser.String("z_digit", false)), new Lazy<IParser<CharToken>>(() => decimal_number_many_2.Value.Many(greedy: true))),
            Parser.Sequence<CharToken, SyntaxNode>("decimal_number#3", (args) => CreateSyntaxNode(false, nameof(decimal_number), args), new Lazy<IParser<CharToken>>(() => unsigned_number.Value))));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> decimal_number_many =
@@ -2945,166 +2935,31 @@ namespace NVerilogParser
            Parser.Sequence<CharToken, SyntaxNode>("sign#1", (args) => CreateSyntaxNode(true, nameof(sign), args), new Lazy<IParser<CharToken>>(() => Parser.Char('-', true)))));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> size =
-          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("size", (args) => CreateSyntaxNode(false, nameof(size), args), new Lazy<IParser<CharToken>>(() => non_zero_unsigned_number.Value)));
-
-        public static Lazy<IParser<CharToken, SyntaxNode>> non_zero_unsigned_number =
-          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("non_zero_unsigned_number", (args) => CreateSyntaxNode(false, nameof(non_zero_unsigned_number), args), new Lazy<IParser<CharToken>>(() => non_zero_decimal_digit.Value), new Lazy<IParser<CharToken>>(() => non_zero_unsigned_number_many.Value.Many(greedy: true))));
-
-        public static Lazy<IParser<CharToken, SyntaxNode>> non_zero_unsigned_number_many =
-          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Or("non_zero_unsigned_number_many", Parser.Sequence<CharToken, SyntaxNode>("non_zero_unsigned_number_many#0", (args) => CreateSyntaxNode(false, nameof(non_zero_unsigned_number_many), args), new Lazy<IParser<CharToken>>(() => Parser.Char('_', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("non_zero_unsigned_number_many#1", (args) => CreateSyntaxNode(false, nameof(non_zero_unsigned_number_many), args), new Lazy<IParser<CharToken>>(() => decimal_digit.Value))));
+          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("size", (args) => CreateSyntaxNode(false, nameof(size), args), new Lazy<IParser<CharToken>>(() => Parser.Regex("[1-9][1-9_]*"))));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> unsigned_number =
-          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("unsigned_number", (args) => CreateSyntaxNode(false, nameof(unsigned_number), args), new Lazy<IParser<CharToken>>(() => decimal_digit.Value), new Lazy<IParser<CharToken>>(() => unsigned_number_many.Value.Many(greedy: true))));
-
-        public static Lazy<IParser<CharToken, SyntaxNode>> unsigned_number_many =
-          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Or("unsigned_number_many", Parser.Sequence<CharToken, SyntaxNode>("unsigned_number_many#0", (args) => CreateSyntaxNode(false, nameof(unsigned_number_many), args), new Lazy<IParser<CharToken>>(() => Parser.Char('_', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("unsigned_number_many#1", (args) => CreateSyntaxNode(false, nameof(unsigned_number_many), args), new Lazy<IParser<CharToken>>(() => decimal_digit.Value))));
+          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("unsigned_number", (args) => CreateSyntaxNode(false, nameof(unsigned_number), args), new Lazy<IParser<CharToken>>(() => Parser.Regex("[0-9][0-9_]*"))));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> binary_value =
-          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("binary_value", (args) => CreateSyntaxNode(false, nameof(binary_value), args), new Lazy<IParser<CharToken>>(() => binary_digit.Value), new Lazy<IParser<CharToken>>(() => binary_value_many.Value.Many(greedy: true))));
-
-        public static Lazy<IParser<CharToken, SyntaxNode>> binary_value_many =
-          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Or("binary_value_many", Parser.Sequence<CharToken, SyntaxNode>("binary_value_many#0", (args) => CreateSyntaxNode(false, nameof(binary_value_many), args), new Lazy<IParser<CharToken>>(() => Parser.Char('_', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("binary_value_many#1", (args) => CreateSyntaxNode(false, nameof(binary_value_many), args), new Lazy<IParser<CharToken>>(() => binary_digit.Value))));
+          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("binary_value", (args) => CreateSyntaxNode(false, nameof(binary_value), args), new Lazy<IParser<CharToken>>(() => Parser.Regex("[xX01zZ\\?][_xX01zZ\\?]*"))));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> octal_value =
-          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("octal_value", (args) => CreateSyntaxNode(false, nameof(octal_value), args), new Lazy<IParser<CharToken>>(() => octal_digit.Value), new Lazy<IParser<CharToken>>(() => octal_value_many.Value.Many(greedy: true))));
-
-        public static Lazy<IParser<CharToken, SyntaxNode>> octal_value_many =
-          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Or("octal_value_many", Parser.Sequence<CharToken, SyntaxNode>("octal_value_many#0", (args) => CreateSyntaxNode(false, nameof(octal_value_many), args), new Lazy<IParser<CharToken>>(() => Parser.Char('_', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("octal_value_many#1", (args) => CreateSyntaxNode(false, nameof(octal_value_many), args), new Lazy<IParser<CharToken>>(() => octal_digit.Value))));
+          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("octal_value", (args) => CreateSyntaxNode(false, nameof(octal_value), args), new Lazy<IParser<CharToken>>(() => Parser.Regex("[xX0-7zZ\\?][xX0-7zZ\\?_]*"))));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> hex_value =
-          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("hex_value", (args) => CreateSyntaxNode(false, nameof(hex_value), args), new Lazy<IParser<CharToken>>(() => hex_digit.Value), new Lazy<IParser<CharToken>>(() => hex_value_many.Value.Many(greedy: true))));
-
-        public static Lazy<IParser<CharToken, SyntaxNode>> hex_value_many =
-          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Or("hex_value_many", Parser.Sequence<CharToken, SyntaxNode>("hex_value_many#0", (args) => CreateSyntaxNode(false, nameof(hex_value_many), args), new Lazy<IParser<CharToken>>(() => Parser.Char('_', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("hex_value_many#1", (args) => CreateSyntaxNode(false, nameof(hex_value_many), args), new Lazy<IParser<CharToken>>(() => hex_digit.Value))));
+          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("hex_value", (args) => CreateSyntaxNode(false, nameof(hex_value), args), new Lazy<IParser<CharToken>>(() => Parser.Regex("[xX0-9a-fA-FzZ\\?][xX0-9a-fA-FzZ\\?_]*"))));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> decimal_base =
-          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.XOr("decimal_base", Parser.Sequence<CharToken, SyntaxNode>("decimal_base#0", (args) => CreateSyntaxNode(false, nameof(decimal_base), args), new Lazy<IParser<CharToken>>(() => Parser.Char('\'', false)), new Lazy<IParser<CharToken>>(() => decimal_base_optional.Value.Optional(greedy: true)), new Lazy<IParser<CharToken>>(() => Parser.Char('d', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("decimal_base#1", (args) => CreateSyntaxNode(false, nameof(decimal_base), args), new Lazy<IParser<CharToken>>(() => Parser.Char('\'', false)), new Lazy<IParser<CharToken>>(() => decimal_base_optional_2.Value.Optional(greedy: true)), new Lazy<IParser<CharToken>>(() => Parser.Char('D', false)))));
-
-        public static Lazy<IParser<CharToken, SyntaxNode>> decimal_base_optional =
-          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.XOr("decimal_base_optional", Parser.Sequence<CharToken, SyntaxNode>("decimal_base_optional#0", (args) => CreateSyntaxNode(false, nameof(decimal_base_optional), args), new Lazy<IParser<CharToken>>(() => Parser.Char('s', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("decimal_base_optional#1", (args) => CreateSyntaxNode(false, nameof(decimal_base_optional), args), new Lazy<IParser<CharToken>>(() => Parser.Char('S', false)))));
-
-        public static Lazy<IParser<CharToken, SyntaxNode>> decimal_base_optional_2 =
-          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.XOr("decimal_base_optional_2", Parser.Sequence<CharToken, SyntaxNode>("decimal_base_optional_2#0", (args) => CreateSyntaxNode(false, nameof(decimal_base_optional_2), args), new Lazy<IParser<CharToken>>(() => Parser.Char('s', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("decimal_base_optional_2#1", (args) => CreateSyntaxNode(false, nameof(decimal_base_optional_2), args), new Lazy<IParser<CharToken>>(() => Parser.Char('S', false)))));
+          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("decimal_base", (args) => CreateSyntaxNode(false, nameof(decimal_base), args), new Lazy<IParser<CharToken>>(() => Parser.Regex("'[sS]?[dD]?"))));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> binary_base =
-          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.XOr("binary_base", Parser.Sequence<CharToken, SyntaxNode>("binary_base#0", (args) => CreateSyntaxNode(false, nameof(binary_base), args), new Lazy<IParser<CharToken>>(() => Parser.Char('\'', false)), new Lazy<IParser<CharToken>>(() => binary_base_optional.Value.Optional(greedy: true)), new Lazy<IParser<CharToken>>(() => Parser.Char('b', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("binary_base#1", (args) => CreateSyntaxNode(false, nameof(binary_base), args), new Lazy<IParser<CharToken>>(() => Parser.Char('\'', false)), new Lazy<IParser<CharToken>>(() => binary_base_optional_2.Value.Optional(greedy: true)), new Lazy<IParser<CharToken>>(() => Parser.Char('B', false)))));
-
-        public static Lazy<IParser<CharToken, SyntaxNode>> binary_base_optional =
-          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.XOr("binary_base_optional", Parser.Sequence<CharToken, SyntaxNode>("binary_base_optional#0", (args) => CreateSyntaxNode(false, nameof(binary_base_optional), args), new Lazy<IParser<CharToken>>(() => Parser.Char('s', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("binary_base_optional#1", (args) => CreateSyntaxNode(false, nameof(binary_base_optional), args), new Lazy<IParser<CharToken>>(() => Parser.Char('S', false)))));
-
-        public static Lazy<IParser<CharToken, SyntaxNode>> binary_base_optional_2 =
-          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.XOr("binary_base_optional_2", Parser.Sequence<CharToken, SyntaxNode>("binary_base_optional_2#0", (args) => CreateSyntaxNode(false, nameof(binary_base_optional_2), args), new Lazy<IParser<CharToken>>(() => Parser.Char('s', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("binary_base_optional_2#1", (args) => CreateSyntaxNode(false, nameof(binary_base_optional_2), args), new Lazy<IParser<CharToken>>(() => Parser.Char('S', false)))));
+          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("binary_base", (args) => CreateSyntaxNode(false, nameof(binary_base), args), new Lazy<IParser<CharToken>>(() => Parser.Regex("'[sS]?[bB]?"))));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> octal_base =
-          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.XOr("octal_base", Parser.Sequence<CharToken, SyntaxNode>("octal_base#0", (args) => CreateSyntaxNode(false, nameof(octal_base), args), new Lazy<IParser<CharToken>>(() => Parser.Char('\'', false)), new Lazy<IParser<CharToken>>(() => octal_base_optional.Value.Optional(greedy: true)), new Lazy<IParser<CharToken>>(() => Parser.Char('o', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("octal_base#1", (args) => CreateSyntaxNode(false, nameof(octal_base), args), new Lazy<IParser<CharToken>>(() => Parser.Char('\'', false)), new Lazy<IParser<CharToken>>(() => octal_base_optional_2.Value.Optional(greedy: true)), new Lazy<IParser<CharToken>>(() => Parser.Char('O', false)))));
-
-        public static Lazy<IParser<CharToken, SyntaxNode>> octal_base_optional =
-          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.XOr("octal_base_optional", Parser.Sequence<CharToken, SyntaxNode>("octal_base_optional#0", (args) => CreateSyntaxNode(false, nameof(octal_base_optional), args), new Lazy<IParser<CharToken>>(() => Parser.Char('s', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("octal_base_optional#1", (args) => CreateSyntaxNode(false, nameof(octal_base_optional), args), new Lazy<IParser<CharToken>>(() => Parser.Char('S', false)))));
-
-        public static Lazy<IParser<CharToken, SyntaxNode>> octal_base_optional_2 =
-          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.XOr("octal_base_optional_2", Parser.Sequence<CharToken, SyntaxNode>("octal_base_optional_2#0", (args) => CreateSyntaxNode(false, nameof(octal_base_optional_2), args), new Lazy<IParser<CharToken>>(() => Parser.Char('s', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("octal_base_optional_2#1", (args) => CreateSyntaxNode(false, nameof(octal_base_optional_2), args), new Lazy<IParser<CharToken>>(() => Parser.Char('S', false)))));
+          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("octal_base", (args) => CreateSyntaxNode(false, nameof(octal_base), args), new Lazy<IParser<CharToken>>(() => Parser.Regex("'[sS]?[oO]?"))));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> hex_base =
-          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.XOr("hex_base", Parser.Sequence<CharToken, SyntaxNode>("hex_base#0", (args) => CreateSyntaxNode(false, nameof(hex_base), args), new Lazy<IParser<CharToken>>(() => Parser.Char('\'', false)), new Lazy<IParser<CharToken>>(() => hex_base_optional.Value.Optional(greedy: true)), new Lazy<IParser<CharToken>>(() => Parser.Char('h', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("hex_base#1", (args) => CreateSyntaxNode(false, nameof(hex_base), args), new Lazy<IParser<CharToken>>(() => Parser.Char('\'', false)), new Lazy<IParser<CharToken>>(() => hex_base_optional_2.Value.Optional(greedy: true)), new Lazy<IParser<CharToken>>(() => Parser.Char('H', false)))));
-
-        public static Lazy<IParser<CharToken, SyntaxNode>> hex_base_optional =
-          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.XOr("hex_base_optional", Parser.Sequence<CharToken, SyntaxNode>("hex_base_optional#0", (args) => CreateSyntaxNode(false, nameof(hex_base_optional), args), new Lazy<IParser<CharToken>>(() => Parser.Char('s', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("hex_base_optional#1", (args) => CreateSyntaxNode(false, nameof(hex_base_optional), args), new Lazy<IParser<CharToken>>(() => Parser.Char('S', false)))));
-
-        public static Lazy<IParser<CharToken, SyntaxNode>> hex_base_optional_2 =
-          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.XOr("hex_base_optional_2", Parser.Sequence<CharToken, SyntaxNode>("hex_base_optional_2#0", (args) => CreateSyntaxNode(false, nameof(hex_base_optional_2), args), new Lazy<IParser<CharToken>>(() => Parser.Char('s', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("hex_base_optional_2#1", (args) => CreateSyntaxNode(false, nameof(hex_base_optional_2), args), new Lazy<IParser<CharToken>>(() => Parser.Char('S', false)))));
-
-        public static Lazy<IParser<CharToken, SyntaxNode>> non_zero_decimal_digit =
-          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.XOr("non_zero_decimal_digit", Parser.Sequence<CharToken, SyntaxNode>("non_zero_decimal_digit#0", (args) => CreateSyntaxNode(false, nameof(non_zero_decimal_digit), args), new Lazy<IParser<CharToken>>(() => Parser.Char('1', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("non_zero_decimal_digit#1", (args) => CreateSyntaxNode(false, nameof(non_zero_decimal_digit), args), new Lazy<IParser<CharToken>>(() => Parser.Char('2', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("non_zero_decimal_digit#2", (args) => CreateSyntaxNode(false, nameof(non_zero_decimal_digit), args), new Lazy<IParser<CharToken>>(() => Parser.Char('3', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("non_zero_decimal_digit#3", (args) => CreateSyntaxNode(false, nameof(non_zero_decimal_digit), args), new Lazy<IParser<CharToken>>(() => Parser.Char('4', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("non_zero_decimal_digit#4", (args) => CreateSyntaxNode(false, nameof(non_zero_decimal_digit), args), new Lazy<IParser<CharToken>>(() => Parser.Char('5', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("non_zero_decimal_digit#5", (args) => CreateSyntaxNode(false, nameof(non_zero_decimal_digit), args), new Lazy<IParser<CharToken>>(() => Parser.Char('6', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("non_zero_decimal_digit#6", (args) => CreateSyntaxNode(false, nameof(non_zero_decimal_digit), args), new Lazy<IParser<CharToken>>(() => Parser.Char('7', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("non_zero_decimal_digit#7", (args) => CreateSyntaxNode(false, nameof(non_zero_decimal_digit), args), new Lazy<IParser<CharToken>>(() => Parser.Char('8', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("non_zero_decimal_digit#8", (args) => CreateSyntaxNode(false, nameof(non_zero_decimal_digit), args), new Lazy<IParser<CharToken>>(() => Parser.Char('9', false)))));
-
-        public static Lazy<IParser<CharToken, SyntaxNode>> decimal_digit =
-          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.XOr("decimal_digit", Parser.Sequence<CharToken, SyntaxNode>("decimal_digit#0", (args) => CreateSyntaxNode(false, nameof(decimal_digit), args), new Lazy<IParser<CharToken>>(() => Parser.Char('0', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("decimal_digit#1", (args) => CreateSyntaxNode(false, nameof(decimal_digit), args), new Lazy<IParser<CharToken>>(() => Parser.Char('1', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("decimal_digit#2", (args) => CreateSyntaxNode(false, nameof(decimal_digit), args), new Lazy<IParser<CharToken>>(() => Parser.Char('2', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("decimal_digit#3", (args) => CreateSyntaxNode(false, nameof(decimal_digit), args), new Lazy<IParser<CharToken>>(() => Parser.Char('3', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("decimal_digit#4", (args) => CreateSyntaxNode(false, nameof(decimal_digit), args), new Lazy<IParser<CharToken>>(() => Parser.Char('4', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("decimal_digit#5", (args) => CreateSyntaxNode(false, nameof(decimal_digit), args), new Lazy<IParser<CharToken>>(() => Parser.Char('5', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("decimal_digit#6", (args) => CreateSyntaxNode(false, nameof(decimal_digit), args), new Lazy<IParser<CharToken>>(() => Parser.Char('6', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("decimal_digit#7", (args) => CreateSyntaxNode(false, nameof(decimal_digit), args), new Lazy<IParser<CharToken>>(() => Parser.Char('7', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("decimal_digit#8", (args) => CreateSyntaxNode(false, nameof(decimal_digit), args), new Lazy<IParser<CharToken>>(() => Parser.Char('8', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("decimal_digit#9", (args) => CreateSyntaxNode(false, nameof(decimal_digit), args), new Lazy<IParser<CharToken>>(() => Parser.Char('9', false)))));
-
-        public static Lazy<IParser<CharToken, SyntaxNode>> binary_digit =
-          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.XOr("binary_digit", Parser.Sequence<CharToken, SyntaxNode>("binary_digit#0", (args) => CreateSyntaxNode(false, nameof(binary_digit), args), new Lazy<IParser<CharToken>>(() => x_digit.Value)),
-           Parser.Sequence<CharToken, SyntaxNode>("binary_digit#1", (args) => CreateSyntaxNode(false, nameof(binary_digit), args), new Lazy<IParser<CharToken>>(() => z_digit.Value)),
-           Parser.Sequence<CharToken, SyntaxNode>("binary_digit#2", (args) => CreateSyntaxNode(false, nameof(binary_digit), args), new Lazy<IParser<CharToken>>(() => Parser.Char('0', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("binary_digit#3", (args) => CreateSyntaxNode(false, nameof(binary_digit), args), new Lazy<IParser<CharToken>>(() => Parser.Char('1', false)))));
-
-        public static Lazy<IParser<CharToken, SyntaxNode>> octal_digit =
-          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.XOr("octal_digit", Parser.Sequence<CharToken, SyntaxNode>("octal_digit#0", (args) => CreateSyntaxNode(false, nameof(octal_digit), args), new Lazy<IParser<CharToken>>(() => x_digit.Value)),
-           Parser.Sequence<CharToken, SyntaxNode>("octal_digit#1", (args) => CreateSyntaxNode(false, nameof(octal_digit), args), new Lazy<IParser<CharToken>>(() => z_digit.Value)),
-           Parser.Sequence<CharToken, SyntaxNode>("octal_digit#2", (args) => CreateSyntaxNode(false, nameof(octal_digit), args), new Lazy<IParser<CharToken>>(() => Parser.Char('0', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("octal_digit#3", (args) => CreateSyntaxNode(false, nameof(octal_digit), args), new Lazy<IParser<CharToken>>(() => Parser.Char('1', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("octal_digit#4", (args) => CreateSyntaxNode(false, nameof(octal_digit), args), new Lazy<IParser<CharToken>>(() => Parser.Char('2', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("octal_digit#5", (args) => CreateSyntaxNode(false, nameof(octal_digit), args), new Lazy<IParser<CharToken>>(() => Parser.Char('3', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("octal_digit#6", (args) => CreateSyntaxNode(false, nameof(octal_digit), args), new Lazy<IParser<CharToken>>(() => Parser.Char('4', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("octal_digit#7", (args) => CreateSyntaxNode(false, nameof(octal_digit), args), new Lazy<IParser<CharToken>>(() => Parser.Char('5', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("octal_digit#8", (args) => CreateSyntaxNode(false, nameof(octal_digit), args), new Lazy<IParser<CharToken>>(() => Parser.Char('6', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("octal_digit#9", (args) => CreateSyntaxNode(false, nameof(octal_digit), args), new Lazy<IParser<CharToken>>(() => Parser.Char('7', false)))));
-
-        public static Lazy<IParser<CharToken, SyntaxNode>> hex_digit =
-          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.XOr("hex_digit", Parser.Sequence<CharToken, SyntaxNode>("hex_digit#0", (args) => CreateSyntaxNode(false, nameof(hex_digit), args), new Lazy<IParser<CharToken>>(() => x_digit.Value)),
-           Parser.Sequence<CharToken, SyntaxNode>("hex_digit#1", (args) => CreateSyntaxNode(false, nameof(hex_digit), args), new Lazy<IParser<CharToken>>(() => z_digit.Value)),
-           Parser.Sequence<CharToken, SyntaxNode>("hex_digit#2", (args) => CreateSyntaxNode(false, nameof(hex_digit), args), new Lazy<IParser<CharToken>>(() => Parser.Char('0', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("hex_digit#3", (args) => CreateSyntaxNode(false, nameof(hex_digit), args), new Lazy<IParser<CharToken>>(() => Parser.Char('1', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("hex_digit#4", (args) => CreateSyntaxNode(false, nameof(hex_digit), args), new Lazy<IParser<CharToken>>(() => Parser.Char('2', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("hex_digit#5", (args) => CreateSyntaxNode(false, nameof(hex_digit), args), new Lazy<IParser<CharToken>>(() => Parser.Char('3', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("hex_digit#6", (args) => CreateSyntaxNode(false, nameof(hex_digit), args), new Lazy<IParser<CharToken>>(() => Parser.Char('4', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("hex_digit#7", (args) => CreateSyntaxNode(false, nameof(hex_digit), args), new Lazy<IParser<CharToken>>(() => Parser.Char('5', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("hex_digit#8", (args) => CreateSyntaxNode(false, nameof(hex_digit), args), new Lazy<IParser<CharToken>>(() => Parser.Char('6', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("hex_digit#9", (args) => CreateSyntaxNode(false, nameof(hex_digit), args), new Lazy<IParser<CharToken>>(() => Parser.Char('7', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("hex_digit#10", (args) => CreateSyntaxNode(false, nameof(hex_digit), args), new Lazy<IParser<CharToken>>(() => Parser.Char('8', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("hex_digit#11", (args) => CreateSyntaxNode(false, nameof(hex_digit), args), new Lazy<IParser<CharToken>>(() => Parser.Char('9', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("hex_digit#12", (args) => CreateSyntaxNode(false, nameof(hex_digit), args), new Lazy<IParser<CharToken>>(() => Parser.Char('a', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("hex_digit#13", (args) => CreateSyntaxNode(false, nameof(hex_digit), args), new Lazy<IParser<CharToken>>(() => Parser.Char('b', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("hex_digit#14", (args) => CreateSyntaxNode(false, nameof(hex_digit), args), new Lazy<IParser<CharToken>>(() => Parser.Char('c', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("hex_digit#15", (args) => CreateSyntaxNode(false, nameof(hex_digit), args), new Lazy<IParser<CharToken>>(() => Parser.Char('d', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("hex_digit#16", (args) => CreateSyntaxNode(false, nameof(hex_digit), args), new Lazy<IParser<CharToken>>(() => Parser.Char('e', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("hex_digit#17", (args) => CreateSyntaxNode(false, nameof(hex_digit), args), new Lazy<IParser<CharToken>>(() => Parser.Char('f', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("hex_digit#18", (args) => CreateSyntaxNode(false, nameof(hex_digit), args), new Lazy<IParser<CharToken>>(() => Parser.Char('A', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("hex_digit#19", (args) => CreateSyntaxNode(false, nameof(hex_digit), args), new Lazy<IParser<CharToken>>(() => Parser.Char('B', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("hex_digit#20", (args) => CreateSyntaxNode(false, nameof(hex_digit), args), new Lazy<IParser<CharToken>>(() => Parser.Char('C', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("hex_digit#21", (args) => CreateSyntaxNode(false, nameof(hex_digit), args), new Lazy<IParser<CharToken>>(() => Parser.Char('D', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("hex_digit#22", (args) => CreateSyntaxNode(false, nameof(hex_digit), args), new Lazy<IParser<CharToken>>(() => Parser.Char('E', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("hex_digit#23", (args) => CreateSyntaxNode(false, nameof(hex_digit), args), new Lazy<IParser<CharToken>>(() => Parser.Char('F', false)))));
-
-        public static Lazy<IParser<CharToken, SyntaxNode>> x_digit =
-          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.XOr("x_digit", Parser.Sequence<CharToken, SyntaxNode>("x_digit#0", (args) => CreateSyntaxNode(false, nameof(x_digit), args), new Lazy<IParser<CharToken>>(() => Parser.Char('x', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("x_digit#1", (args) => CreateSyntaxNode(false, nameof(x_digit), args), new Lazy<IParser<CharToken>>(() => Parser.Char('X', false)))));
-
-        public static Lazy<IParser<CharToken, SyntaxNode>> z_digit =
-          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.XOr("z_digit", Parser.Sequence<CharToken, SyntaxNode>("z_digit#0", (args) => CreateSyntaxNode(false, nameof(z_digit), args), new Lazy<IParser<CharToken>>(() => Parser.Char('z', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("z_digit#1", (args) => CreateSyntaxNode(false, nameof(z_digit), args), new Lazy<IParser<CharToken>>(() => Parser.Char('Z', false))),
-           Parser.Sequence<CharToken, SyntaxNode>("z_digit#2", (args) => CreateSyntaxNode(false, nameof(z_digit), args), new Lazy<IParser<CharToken>>(() => Parser.Char('?', false)))));
+          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("hex_base", (args) => CreateSyntaxNode(false, nameof(hex_base), args), new Lazy<IParser<CharToken>>(() => Parser.Regex("'[sS]?[hH]?"))));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> @string =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("@string", (args) => CreateSyntaxNode(true, nameof(@string), args), new Lazy<IParser<CharToken>>(() => Parser.Regex("\"((?:\\\\.|[^\\\"])*)\"").Token())));
@@ -3217,7 +3072,7 @@ namespace NVerilogParser
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("discipline_identifier", (args) => CreateSyntaxNode(false, nameof(discipline_identifier), args), new Lazy<IParser<CharToken>>(() => identifier.Value)));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> escaped_identifier =
-          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("escaped_identifier", (args) => CreateSyntaxNode(true, nameof(escaped_identifier), args), new Lazy<IParser<CharToken>>(() => Parser.Regex("\\\\[^ ]+ ").Token())));
+          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("escaped_identifier", (args) => CreateSyntaxNode(true, nameof(escaped_identifier), args), new Lazy<IParser<CharToken>>(() => Parser.Regex("\\\\[^ ]+").Token())));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> event_identifier =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("event_identifier", (args) => CreateSyntaxNode(false, nameof(event_identifier), args), new Lazy<IParser<CharToken>>(() => identifier.Value)));
@@ -3341,19 +3196,19 @@ namespace NVerilogParser
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("real_identifier", (args) => CreateSyntaxNode(false, nameof(real_identifier), args), new Lazy<IParser<CharToken>>(() => identifier.Value)));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> simple_identifier =
-          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("simple_identifier", (args) => CreateSyntaxNode(false, nameof(simple_identifier), args), new Lazy<IParser<CharToken>>(() => Parser.Regex("[a-zA-Z_][a-zA-Z0-9_$]*"))));
+          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("simple_identifier", (args) => CreateSyntaxNode(false, nameof(simple_identifier), args), new Lazy<IParser<CharToken>>(() => Parser.Regex("[a-zA-Z_][a-zA-Z0-9_\\$]*"))));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> specparam_identifier =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("specparam_identifier", (args) => CreateSyntaxNode(true, nameof(specparam_identifier), args), new Lazy<IParser<CharToken>>(() => identifier.Value.Token())));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> system_function_identifier =
-          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("system_function_identifier", (args) => CreateSyntaxNode(false, nameof(system_function_identifier), args), new Lazy<IParser<CharToken>>(() => Parser.Regex("\\$[a-zA-Z0-9_$][a-zA-Z0-9_$]*"))));
+          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("system_function_identifier", (args) => CreateSyntaxNode(false, nameof(system_function_identifier), args), new Lazy<IParser<CharToken>>(() => Parser.Regex("\\$[a-zA-Z0-9_$][a-zA-Z0-9_\\$]*"))));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> system_parameter_identifier =
-          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("system_parameter_identifier", (args) => CreateSyntaxNode(false, nameof(system_parameter_identifier), args), new Lazy<IParser<CharToken>>(() => Parser.Regex("\\$[a-zA-Z0-9_$][a-zA-Z0-9_$]*"))));
+          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("system_parameter_identifier", (args) => CreateSyntaxNode(false, nameof(system_parameter_identifier), args), new Lazy<IParser<CharToken>>(() => Parser.Regex("\\$[a-zA-Z0-9_$][a-zA-Z0-9_\\$]*"))));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> system_task_identifier =
-          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("system_task_identifier", (args) => CreateSyntaxNode(false, nameof(system_task_identifier), args), new Lazy<IParser<CharToken>>(() => Parser.Regex("\\$[a-zA-Z0-9_$][a-zA-Z0-9_$]*"))));
+          new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("system_task_identifier", (args) => CreateSyntaxNode(false, nameof(system_task_identifier), args), new Lazy<IParser<CharToken>>(() => Parser.Regex("\\$[a-zA-Z0-9_$][a-zA-Z0-9_\\$]*"))));
 
         public static Lazy<IParser<CharToken, SyntaxNode>> task_identifier =
           new Lazy<IParser<CharToken, SyntaxNode>>(() => Parser.Sequence<CharToken, SyntaxNode>("task_identifier", (args) => CreateSyntaxNode(false, nameof(task_identifier), args), new Lazy<IParser<CharToken>>(() => identifier.Value)));
