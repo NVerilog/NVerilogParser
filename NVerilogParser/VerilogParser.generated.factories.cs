@@ -9,23 +9,14 @@ namespace NVerilogParser
     {
         public static Func<bool, string, (string valueParserName, object value)[], SyntaxNode> CreateSyntaxNode =
         (tokenize, name, args) => {
-            var result = new (string valueParserName, object value)[args.Length];
             for (var i = 0; i < args.Length; i++)
             {
-                var res = args[i].value;
-
-                if (res is IOption<object> c)
+                if (args[i].value is IOption<object> c)
                 {
-                    result[i].value = CreateOption(c.GetOrDefault());
+                    args[i].value = CreateOption(c.GetOrDefault());
                 }
-                else
-                {
-                    result[i].value = res;
-                }
-
-                result[i].valueParserName = args[i].valueParserName;
             }
-            return CreateNode(name, tokenize, result);
+            return CreateNode(name, tokenize, args);
         };
 
         public static SyntaxNode CreateNode(string name, bool tokenize, (string valueParserName, object value)[] args)

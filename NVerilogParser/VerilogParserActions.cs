@@ -401,17 +401,6 @@ namespace NVerilogParser
                 || state.VerilogSymbolTable.HasDefinition("output_port", value)
                 || state.VerilogSymbolTable.HasDefinition("input_port", value);
             }, new[] { "event_declaration" }, (obj, Scope) => obj.Text(), DefaultLookupDepth));
-
-            Parsers.binary_operator_6.Value.After((args) =>
-            {
-                if (args.ParserResult.WasSuccessful)
-                {
-                    if (args.Input.Position < args.Input.Source.Count - 1 && args.Input.Source[args.Input.Position + 1].Value == '&')
-                    {
-                        args.ParserResult.Values?.Clear();
-                    }
-                }
-            });
         }
     }
 }
