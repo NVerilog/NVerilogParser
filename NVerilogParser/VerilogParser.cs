@@ -3,6 +3,7 @@ using CFGToolkit.ParserCombinator;
 using CFGToolkit.ParserCombinator.Input;
 using NVerilogParser.Lexer;
 using System;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -12,9 +13,9 @@ namespace NVerilogParser
     {
         public Preprocessor.Preprocessor Preprocessor { get; }
 
-        public VerilogParser(Func<string, Task<string>> fileProvider = null)
+        public VerilogParser(Func<string, Task<string>> fileProvider = null, Dictionary<string, string> defines = null)
         {
-            Preprocessor = new Preprocessor.Preprocessor(fileProvider);
+            Preprocessor = new Preprocessor.Preprocessor(fileProvider, defines);
         }
 
         public Task<IUnionResult<CharToken>> TryParse(string txt, Action<(int, int)> progress = null)

@@ -1,7 +1,6 @@
 using CFGToolkit.ParserCombinator;
 using CFGToolkit.ParserCombinator.Input;
-using NPreprocessor.Macros;
-using NVerilogParser.Lexer;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -15,6 +14,8 @@ namespace NVerilogParser.Tests
 
         protected abstract string BasePath { get; }
 
+        protected Dictionary<string, string> Definitions { get; set; }
+
         protected string GetTextFromFile(string basePath, string fileName)
         {
             return File.ReadAllText(@$"{basePath}\{fileName}");
@@ -24,7 +25,7 @@ namespace NVerilogParser.Tests
 
         protected void Check(string testPath)
         {
-            var parser = new VerilogParser((fileName) => Task.FromResult(GetTextFromFile(IncludePath, fileName)));
+            var parser = new VerilogParser((fileName) => Task.FromResult(GetTextFromFile(IncludePath, fileName)), Definitions);
             string txt = Prefix + GetTextFromFile(BasePath, testPath);
 
             var timeout = 1000 * 60 * 10;

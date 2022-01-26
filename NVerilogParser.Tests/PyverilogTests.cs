@@ -9,6 +9,12 @@ namespace NVerilogParser.Tests
 
         protected override string BasePath => @"C:\dev\repos\Pyverilog-develop\verilogcode";
 
+        public PyverilogTests()
+        {
+            Definitions = new Dictionary<string, string>();
+            Definitions["`STEP"] = "100";
+        }
+
         [Theory]
         [MemberData(nameof(Data))]
         public void ParseAndCheckResult(string testPath)
