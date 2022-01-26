@@ -2,8 +2,12 @@
 {
     public class Timescale : Directive
     {
-        string TimeUnit { get; set; }
+        public int TimeUnit { get; set; }
 
-        string TimePrecision { get; set; }
+        public string TimeUnitScaleFactor { get; set; }
+
+        public int TimePrecision { get; set; }
+
+        public string TimePrecisionScaleFactor { get; set; }
     }
 }
