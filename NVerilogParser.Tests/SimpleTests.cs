@@ -241,6 +241,9 @@ endmodule ");
         {
             var txt = "resistor #(.r(10K)) r1(out,gnd);";
             var parser = new VerilogParser();
+            parser.State.VerilogSymbolTable.RegisterDefinition("resistor", "module_identifier", 0);
+
+
             var results = await parser.TryParse(Parsers.module_instantiation.Value.End(), txt);
 
             Assert.True(results.WasSuccessful);

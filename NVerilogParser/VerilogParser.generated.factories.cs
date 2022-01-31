@@ -7,8 +7,8 @@ namespace NVerilogParser
 {
     public partial class Parsers
     {
-        public static Func<bool, string, (string valueParserName, object value)[], SyntaxNode> CreateSyntaxNode =
-        (tokenize, name, args) => {
+        public static Func<bool, bool, string, (string valueParserName, object value)[], SyntaxNode> CreateSyntaxNode = (nodeTokenize, tokenTokenize, name, args) =>
+        {
             for (var i = 0; i < args.Length; i++)
             {
                 if (args[i].value is IOption<object> c)
@@ -16,43 +16,40 @@ namespace NVerilogParser
                     args[i].value = CreateOption(c.GetOrDefault());
                 }
             }
-            return CreateNode(name, tokenize, args);
+            return CreateNode(name, nodeTokenize, tokenTokenize, args);
         };
 
-        public static SyntaxNode CreateNode(string name, bool tokenize, (string valueParserName, object value)[] args)
+        public static SyntaxNode CreateNode(string name, bool nodeTokenize, bool tokenTokenize, (string valueParserName, object value)[] args)
         {
             var node = new SyntaxNode(name);
 
-            if (tokenize)
-            {
-                node.Attributes["tokenize"] = "true";
-            }
+            node.Attributes["nodeTokenize"] = nodeTokenize.ToString().ToLower();
+            node.Attributes["tokenTokenize"] = tokenTokenize.ToString().ToLower();
 
             foreach (var item in args)
             {
                 var child = item.value;
 
-                if (child is string s && !string.IsNullOrEmpty(s))
+                if (child is string @string && !string.IsNullOrEmpty(@string))
                 {
-                    node.Children.Add(new SyntaxToken { Value = child.ToString(), Name = item.valueParserName, Parent = node });
+                    node.Children.Add(new SyntaxToken { Value = @string, Name = item.valueParserName });
                 }
                 else if (child is char c)
                 {
-                    node.Children.Add(new SyntaxToken { Value = c.ToString(), Name = item.valueParserName, Parent = node });
+                    node.Children.Add(new SyntaxToken { Value = c.ToString(), Name = item.valueParserName });
                 }
                 else if (child is SyntaxNode a)
                 {
-                    a.Parent = node;
                     node.Children.Add(a);
                 }
                 else if (child is IEnumerable<ISyntaxElement> e)
                 {
-                    node.Children.Add(new SyntaxNodeMany(item.valueParserName, e) { Parent = node });
+                    var many = new SyntaxNodeMany(item.valueParserName, e);
+                    node.Children.Add(many);
                 }
                 else if (child is SyntaxNodeOption opt)
                 {
                     opt.Name = item.valueParserName;
-                    opt.Parent = node;
                     node.Children.Add(opt);
                 }
             }
@@ -78,7 +75,5 @@ namespace NVerilogParser
 
             return null;
         }
-
-
     }
 }

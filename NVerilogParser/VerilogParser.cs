@@ -1,4 +1,5 @@
 ﻿using CFGToolkit.AST;
+using CFGToolkit.AST.Algorithms.TreeVisitors;
 using CFGToolkit.ParserCombinator;
 using CFGToolkit.ParserCombinator.Input;
 using NVerilogParser.Lexer;
@@ -13,9 +14,14 @@ namespace NVerilogParser
     {
         public Preprocessor.Preprocessor Preprocessor { get; }
 
+        public VerilogParserState<CharToken> State { get; }
+
         public VerilogParser(Func<string, Task<string>> fileProvider = null, Dictionary<string, string> defines = null)
         {
             Preprocessor = new Preprocessor.Preprocessor(fileProvider, defines);
+            State = new VerilogParserState<CharToken>();
+            State.BeforeParseActions = VerilogParserActions.BeforeActions;
+            State.AfterParseActions = VerilogParserActions.AfterActions;
         }
 
         public Task<IUnionResult<CharToken>> TryParse(string txt, Action<(int, int)> progress = null)
@@ -29,21 +35,26 @@ namespace NVerilogParser
 
             var lexer = new CharLexer();
             var tokens = lexer.GetTokens(prepResult.Text);
-
-            var state = new VerilogParserState<CharToken>();
-            state.BeforeParseActions = VerilogParserActions.BeforeActions;
-            state.AfterParseActions = VerilogParserActions.AfterActions;
-            state.UpdateHandler = (result) => {
-            
+         
+            State.UpdateHandler = (result) =>
+            {
                 if (result)
                 {
-                    progress?.Invoke((state.LastConsumedPosition, tokens.Count));
+                    progress?.Invoke((State.LastConsumedPosition, tokens.Count));
                 }
             };
 
-            HackOrderOfDefinitions(state.VerilogSymbolTable, prepResult.Text);
+            HackOrderOfDefinitions(State.VerilogSymbolTable, prepResult.Text);
 
-            var result = parser.TryParse(tokens, state);
+            var result = parser.TryParse(tokens, State);
+
+            // Set parents 
+            if (result.Values?.Count == 1)
+            {
+                var algorithm = new SetParentsVisitor();
+                algorithm.Visit(result.Values[0].Value as SyntaxNode);
+            }
+
             return result;
         }
 

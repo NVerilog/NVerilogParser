@@ -53,8 +53,22 @@ namespace NVerilogParser
 
             CreateContraints(VerilogKeywords.Values.ToArray(), kernel_parameters.ToArray(), buildInFunctions.ToArray());
 
+            CreateDefinitions();
+
             CreateScopes();
 
+        }
+
+        private static void CreateDefinitions()
+        {
+            //paramset_identifier
+            Parsers.paramset_identifier.Value.After((args) => {
+                var state = (VerilogParserState<CharToken>)args.GlobalState;
+                if (args.ParserResult.WasSuccessful && args.ParserCallStack.HasParser("paramset_declaration", 10))
+                {
+                    state.VerilogSymbolTable.RegisterDefinition(args.ParserResult.Values[0].Text(), "paramset_identifier", args.Input.Position);
+                }
+            });
         }
 
         private static void CreateScopes()
@@ -71,7 +85,9 @@ namespace NVerilogParser
                 var state =(VerilogParserState<CharToken>)args.GlobalState;
                 if (args.ParserResult.WasSuccessful && args.ParserCallStack.HasParser("module_declaration", 10))
                 {
-                    state.VerilogSymbolTable.UpdateScopeName(ScopeType.Module, args.ParserResult.Values[0].Text());
+                    var name = args.ParserResult.Values[0].Text().Trim();
+                    state.VerilogSymbolTable.UpdateScopeName(ScopeType.Module, name);
+                    state.VerilogSymbolTable.RegisterDefinition(name, "module_identifier", args.Input.Position);
                 }
             });
 
@@ -100,7 +116,7 @@ namespace NVerilogParser
                 var state =(VerilogParserState<CharToken>)args.GlobalState;
                 if (args.ParserResult.WasSuccessful && args.ParserCallStack.HasParser("function_declaration", 10))
                 {
-                    state.VerilogSymbolTable.UpdateScopeName(ScopeType.Function, args.ParserResult.Values[0].Text());
+                    state.VerilogSymbolTable.UpdateScopeName(ScopeType.Function, args.ParserResult.Values[0].Text().Trim());
                 }
             });
 
@@ -128,7 +144,7 @@ namespace NVerilogParser
                     || args.ParserCallStack.HasParser("par_block", 10)
                     || args.ParserCallStack.HasParser("analog_seq_block", 10)))
                 {
-                    state.VerilogSymbolTable.UpdateScopeName(ScopeType.Block, args.ParserResult.Values[0].Text());
+                    state.VerilogSymbolTable.UpdateScopeName(ScopeType.Block, args.ParserResult.Values[0].Text().Trim());
                 }
             });
 
@@ -223,6 +239,7 @@ namespace NVerilogParser
                     state.VerilogSymbolTable.CleanScope();
                 }
             });
+           
         }
 
         private static void CreateContraints(string[] keywords, string[] kernel_parameters, string[] buildInFunctions)
@@ -295,19 +312,17 @@ namespace NVerilogParser
             Parsers.event_declaration.Value.After(VerilogParserActionTypes.Collect<SyntaxNode>("module_declaration", "event_identifier", (obj, scope) => obj.GetValue<SyntaxNode>().GetNodes("event_identifier", DefaultLookupDepth).Select(node => node.Text())));
             Parsers.specparam_identifier.Value.After(VerilogParserActionTypes.Enforce<SyntaxNode>(new[] { "specparam_identifier" }, new[] { "specparam_declaration" }, (obj, scope) => obj.Text(), int.MaxValue));
 
-            Parsers.paramset_identifier.Value.After(VerilogParserActionTypes.Enforce<SyntaxNode>(new[] { "paramset_identifier" }, new[] { "paramset_declaration" }, (obj, scope) => obj.Text(), DefaultLookupDepth));
-            Parsers.paramset_identifier.Value.After(VerilogParserActionTypes.Not<SyntaxNode>((state, input, scope, value) =>
-            {
-                return state.VerilogSymbolTable.HasDefinition("module_identifier", value);
-            }, (obj, scope) => obj.Text()));
-
-
-            Parsers.module_identifier.Value.After(VerilogParserActionTypes.Enforce<SyntaxNode>(new[] { "module_identifier" }, new[] { "module_declaration", "module_instantiation" }, (obj, scope) => obj.Text(), 5));
-            Parsers.module_identifier.Value.After(VerilogParserActionTypes.Not<SyntaxNode>((state, input, scope, value) =>
+            Parsers.paramset_identifier.Value.After(VerilogParserActionTypes.Enforce<SyntaxNode>((value, state, scope) =>
             {
                 return state.VerilogSymbolTable.HasDefinition("paramset_identifier", value);
-            }, (obj, scope) => obj.Text()));
 
+            }, new[] { "paramset_declaration" }, (obj, scope) => obj.Text(), DefaultLookupDepth));
+
+            Parsers.module_identifier.Value.After(VerilogParserActionTypes.Enforce<SyntaxNode>((value, state, scope) =>
+            {
+                return state.VerilogSymbolTable.HasDefinition("module_identifier", value);
+
+            }, new[] { "module_declaration" }, (obj, scope) => obj.Text(), DefaultLookupDepth));
 
             Parsers.udp_identifier.Value.After(VerilogParserActionTypes.Enforce<SyntaxNode>(new[] { "udp_identifier" }, new[] { "udp_declaration" }, (obj, scope) => obj.Text(), 5));
             Parsers.net_identifier.Value.After(VerilogParserActionTypes.Enforce<SyntaxNode>((value, state, scope) =>
@@ -316,8 +331,10 @@ namespace NVerilogParser
 
             }, new[] { "list_of_net_identifiers", "list_of_net_decl_assignments" }, (obj, scope) => obj.Text(), DefaultLookupDepth));
             Parsers.genvar_identifier.Value.After(VerilogParserActionTypes.Enforce<SyntaxNode>(new[] { "genvar_identifier" }, new[] { "genvar_declaration" }, (obj, scope) => obj.Text(), 5 * DefaultLookupDepth));
-            Parsers.discipline_identifier.Value.After(VerilogParserActionTypes.Enforce<SyntaxNode>(new[] { "discipline_identifier" }, new[] { "discipline_declaration" }, (obj, scope) => obj.Text(), DefaultLookupDepth));
-
+            Parsers.discipline_identifier.Value.After(VerilogParserActionTypes.Enforce<SyntaxNode>(new[] { "discipline_identifier" }, new[] { "discipline_declaration" }, (obj, scope) =>
+            {
+                return obj.Text();
+            }, DefaultLookupDepth));
 
             Parsers.function_identifier.Value.After(VerilogParserActionTypes.Enforce<SyntaxNode>((value, state, scope) =>
             {
@@ -336,10 +353,8 @@ namespace NVerilogParser
 
             Parsers.parameter_reference.Value.After(VerilogParserActionTypes.Enforce<SyntaxNode>((value, state, scope) =>
             {
-
                 return state.VerilogSymbolTable.HasDefinition("parameter_identifier", value)
                 || state.VerilogSymbolTable.HasDefinition("local_parameter_identifier", value);
-
 
             }, new string[] { }, (obj, scope) => obj.Text(), DefaultLookupDepth));
 
@@ -401,6 +416,15 @@ namespace NVerilogParser
                 || state.VerilogSymbolTable.HasDefinition("output_port", value)
                 || state.VerilogSymbolTable.HasDefinition("input_port", value);
             }, new[] { "event_declaration" }, (obj, Scope) => obj.Text(), DefaultLookupDepth));
+
+            Parsers.escaped_identifier.Value.After((args) =>
+            {
+                if (args.ParserResult.WasSuccessful)
+                {
+                    var token = (args.ParserResult.Values[0].Value as SyntaxNode).GetFirstToken();
+                    token.Value = token.Value.Substring(1);
+                }
+            });
         }
     }
 }

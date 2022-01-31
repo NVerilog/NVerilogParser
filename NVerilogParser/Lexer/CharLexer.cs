@@ -1,5 +1,4 @@
-﻿using CFGToolkit.ParserCombinator;
-using CFGToolkit.ParserCombinator.Input;
+﻿using CFGToolkit.ParserCombinator.Input;
 using NPreprocessor;
 using System;
 using System.Collections.Generic;
@@ -30,18 +29,29 @@ namespace NVerilogParser.Lexer
                 }
                 else
                 {
-                    char? prev = null;
-                    for (var i = 0; i < line.Length; i++)
+                    var trimmed = line.TrimEnd('\r', '\n');
+
+                    if (trimmed.Length == 0)
                     {
-                        int index = i + position++;
+                        tokens.Add(new CharToken() { Position = position++, Value = ' ', Line = lineNumber });
+                    }
+                    else
+                    {
+                        line = trimmed + ' ';
 
-                        if (prev != null && char.IsWhiteSpace(prev.Value) && char.IsWhiteSpace(line[i]))
+                        char? prev = null;
+                        for (var i = 0; i < line.Length; i++)
                         {
-                            continue;
-                        }
+                            int index = i + position++;
 
-                        tokens.Add(new CharToken() { Position = index, Value = line[i], Line = lineNumber });
-                        prev = line[i];
+                            if (prev != null && char.IsWhiteSpace(prev.Value) && char.IsWhiteSpace(line[i]))
+                            {
+                                continue;
+                            }
+
+                            tokens.Add(new CharToken() { Position = index, Value = line[i], Line = lineNumber });
+                            prev = line[i];
+                        }
                     }
                 }
 

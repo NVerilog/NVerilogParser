@@ -8,7 +8,7 @@
     <ApplicationIcon />
     <StartupObject />
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Version>1.0.0-beta-05</Version>
+    <Version>1.0.0-beta-06</Version>
     <Authors>Marcin Gołębiowski</Authors>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
@@ -24,7 +24,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CFGToolkit.AST" Version="1.0.0-beta-3" />
+    <PackageReference Include="CFGToolkit.AST" Version="1.0.0-beta-4" />
     <PackageReference Include="CFGToolkit.ParserCombinator" Version="1.0.0-beta-10" />
     <PackageReference Include="NPreprocessor" Version="1.0.0-beta-03" />
   </ItemGroup>
