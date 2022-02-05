@@ -49,7 +49,7 @@ namespace NVerilogParser
         {
             HashSet<string> kernel_parameters = new HashSet<string> { "$vt" };
 
-            HashSet<string> buildInFunctions = new HashSet<string> { "exp", "ln", "abs", "sqrt", "analysis", "$mfactor" };
+            HashSet<string> buildInFunctions = new HashSet<string> { "$mfactor", "$display", "$strobe", "$monitor", "$write" };
 
             CreateContraints(VerilogKeywords.Values.ToArray(), kernel_parameters.ToArray(), buildInFunctions.ToArray());
 
