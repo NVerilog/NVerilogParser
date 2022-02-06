@@ -124,7 +124,29 @@ namespace NVerilogParser
     public enum ScopeType
     {
         Module,
+        Nature,
+        Discipline,
         Function,
-        Block
+        Block,
+        ParamsetDeclaration,
+        TaskDeclaration,
+        UdpDeclaration,
+        InputPortDeclaration,
+        InputOutputPortDeclaration,
+        OutputPortDeclaration,
+        AliasParam,
+        EventDeclaration,
+        ParameterDeclaration,
+        LocalParameterDeclaration,
+        NetDeclaration,
+        RegDeclaration,
+        IntegerDeclaration,
+        RealDeclaration,
+        RealTimeDeclaration,
+        TimeDeclaration,
+        GenvarDeclaration,
+        BranchDeclaration,
+
+        ModuleInstantiation
     }
 }
