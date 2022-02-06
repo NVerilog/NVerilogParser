@@ -161,6 +161,17 @@ endmodule
         }
 
         [Fact]
+        public async void From()
+        {
+            var parser = new VerilogParser();
+            var results = await parser.TryParse(Parsers.parameter_declaration.Value, @"parameter integer x = 8 from [1:24];");
+
+            Assert.True(results.WasSuccessful);
+            Assert.True(results.Values.Count == 1);
+            Assert.False(results.Values[0].EmptyMatch);
+        }
+
+        [Fact]
         public async void Always2()
         {
             var parser = new VerilogParser();

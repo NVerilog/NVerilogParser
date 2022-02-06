@@ -35,7 +35,16 @@ namespace NVerilogParser
 
             var lexer = new CharLexer();
             var tokens = lexer.GetTokens(prepResult.Text);
-         
+
+            if (Options.Cache)
+            {
+                State.Cache = new Dictionary<long, IUnionResult<CharToken>>[tokens.Count];
+                for (var i = 0; i < State.Cache.Length; i++)
+                {
+                    State.Cache[i] = new Dictionary<long, IUnionResult<CharToken>>();
+                }
+            }
+
             State.UpdateHandler = (result) =>
             {
                 if (result)
