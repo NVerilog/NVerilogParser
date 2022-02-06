@@ -24,7 +24,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CFGToolkit.AST" Version="1.0.0-beta-4" />
+    <PackageReference Include="CFGToolkit.AST" Version="1.0.0-ll-01" />
     <PackageReference Include="CFGToolkit.ParserCombinator" Version="1.0.0-beta-12" />
     <PackageReference Include="NPreprocessor" Version="1.0.0-beta-03" />
   </ItemGroup>

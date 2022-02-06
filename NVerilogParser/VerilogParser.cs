@@ -61,7 +61,7 @@ namespace NVerilogParser
             if (result.Values?.Count == 1)
             {
                 var algorithm = new SetParentsVisitor();
-                algorithm.Visit(result.Values[0].Value as SyntaxNode);
+                algorithm.Visit(result.Values[0].Value as SyntaxNode, 0);
             }
 
             return result;
