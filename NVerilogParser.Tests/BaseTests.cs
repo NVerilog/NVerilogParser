@@ -40,7 +40,7 @@ namespace NVerilogParser.Tests
             var state = results.GlobalState;
             if (!results.WasSuccessful)
             {
-                var nonConsumed = results.Input.Source.Skip(state.LastConsumedPosition + 1);
+                var nonConsumed = results.Input.Tokens.Skip(state.LastConsumedPosition + 1);
                 string ctxt = string.Join("", nonConsumed.Select(s => s.Value));
                 Assert.True(false, ctxt + "\r\n==\r\n" + txt);
             }

@@ -42,6 +42,8 @@ namespace NVerilogParser
     {
         private const int DefaultLookDownDepth = 3;
         private const int DefaultLookUpDepth = 9;
+        private const int ShallowLookUpDepth = 9;
+
 
         public static Dictionary<IParser<CharToken>, List<Action<AfterArgs<CharToken>>>> AfterActions = new Dictionary<IParser<CharToken>, List<Action<AfterArgs<CharToken>>>>();
 
@@ -54,6 +56,8 @@ namespace NVerilogParser
 
         private static void CreateScopes()
         {
+            var keywordsArray = VerilogKeywords.Values.ToArray();
+
             // Modules
             Parsers.module_declaration.Value.Before(CreateScope(ScopeType.Module));
             Parsers.module_identifier.Value.After((args) => EnforeAndCollect(ScopeType.Module, args, nameof(Parsers.module_declaration), nameof(Parsers.module_identifier)));
@@ -125,7 +129,6 @@ namespace NVerilogParser
                     }
                     else
                     {
-
                         if (!state.VerilogSymbolTable.HasDefinition("block_identifier", name))
                         {
                             args.ParserResult.Values.Clear();
@@ -166,24 +169,24 @@ namespace NVerilogParser
                         state.VerilogSymbolTable.RegisterDefinition(name, "port_identifier", args.Input.Position);
                         state.VerilogSymbolTable.RegisterDefinition(name, "net_identifier", args.Input.Position);
                     }
-                    else if (args.ParserCallStack.HasParser("port", DefaultLookUpDepth))
+                    else if (args.ParserCallStack.HasParser("port", ShallowLookUpDepth))
                     {
                         state.VerilogSymbolTable.RegisterDefinition(name, "port_identifier", args.Input.Position);
                         state.VerilogSymbolTable.RegisterDefinition(name, "net_identifier", args.Input.Position);
                     }
-                    else if (args.ParserCallStack.HasParser("input_declaration", DefaultLookUpDepth))
+                    else if (args.ParserCallStack.HasParser("input_declaration", ShallowLookUpDepth))
                     {
                         state.VerilogSymbolTable.UpdateScopeName(ScopeType.InputPortDeclaration, name);
                         state.VerilogSymbolTable.RegisterDefinition(name, "port_identifier", args.Input.Position);
                         state.VerilogSymbolTable.RegisterDefinition(name, "net_identifier", args.Input.Position);
                     }
-                    else if (args.ParserCallStack.HasParser("output_declaration", DefaultLookUpDepth))
+                    else if (args.ParserCallStack.HasParser("output_declaration", ShallowLookUpDepth))
                     {
                         state.VerilogSymbolTable.UpdateScopeName(ScopeType.OutputPortDeclaration, name);
                         state.VerilogSymbolTable.RegisterDefinition(name, "port_identifier", args.Input.Position);
                         state.VerilogSymbolTable.RegisterDefinition(name, "net_identifier", args.Input.Position);
                     }
-                    else if (args.ParserCallStack.HasParser("inout_declaration", DefaultLookUpDepth))
+                    else if (args.ParserCallStack.HasParser("inout_declaration", ShallowLookUpDepth))
                     {
                         state.VerilogSymbolTable.UpdateScopeName(ScopeType.InputOutputPortDeclaration, name);
                         state.VerilogSymbolTable.RegisterDefinition(name, "port_identifier", args.Input.Position);
@@ -320,12 +323,12 @@ namespace NVerilogParser
             // Others
             Parsers.identifier.Value.After(Enforce<SyntaxNode>((value, state, scope) =>
             {
-                return !VerilogKeywords.Values.Contains(value);
+                return !keywordsArray.Contains(value);
             }, new string[] { }, (obj, scope) => obj.Text(), 0));
 
             Parsers.port_identifier.Value.After(Enforce<SyntaxNode>((value, state, scope) =>
             {
-                return !VerilogKeywords.Values.Contains(value);
+                return !keywordsArray.Contains(value);
             }, new string[] { }, (obj, scope) => obj.Text(), 0));
 
             Parsers.parameter_reference.Value.After(Enforce<SyntaxNode>((value, state, scope) =>
@@ -392,7 +395,7 @@ namespace NVerilogParser
                 int i = 0;
                 for (; i < scopeTypes.Length; i++)
                 {
-                    if (args.ParserCallStack.HasParser(parentNames[i], DefaultLookUpDepth))
+                    if (args.ParserCallStack.HasParser(parentNames[i], ShallowLookUpDepth))
                     {
                         if (updateScopeName)
                         {
