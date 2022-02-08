@@ -1,5 +1,6 @@
 ﻿using CFGToolkit.AST;
-using CFGToolkit.AST.Algorithms.TreeVisitors;
+using CFGToolkit.AST.Visitors.Cases;
+using CFGToolkit.AST.Visitors.Traversals;
 using CFGToolkit.ParserCombinator;
 using CFGToolkit.ParserCombinator.Input;
 using NVerilogParser.Lexer;
@@ -60,8 +61,9 @@ namespace NVerilogParser
             // Set parents 
             if (result.Values?.Count == 1)
             {
-                var algorithm = new SetParentsVisitor();
-                algorithm.Visit(result.Values[0].Value as SyntaxNode, 0);
+                var visitor = new SetParentVisitor();
+                var traversal = new PreOrderTreeTraversal<bool>(visitor);
+                traversal.Accept(result.Values[0].Value as SyntaxNode, new TreeTraversalContext());
             }
 
             return result;
