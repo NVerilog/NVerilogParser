@@ -41,8 +41,8 @@ namespace NVerilogParser
     public class VerilogParserActions
     {
         private const int DefaultLookDownDepth = 3;
-        private const int DefaultLookUpDepth = 9;
-        private const int ShallowLookUpDepth = 9;
+        private const int DefaultLookUpDepth = 16;
+        private const int ShallowLookUpDepth = 16;
 
 
         public static Dictionary<IParser<CharToken>, List<Action<AfterArgs<CharToken>>>> AfterActions = new Dictionary<IParser<CharToken>, List<Action<AfterArgs<CharToken>>>>();
