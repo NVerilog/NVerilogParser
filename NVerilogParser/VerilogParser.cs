@@ -5,6 +5,7 @@ using CFGToolkit.ParserCombinator;
 using CFGToolkit.ParserCombinator.Input;
 using NVerilogParser.Lexer;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -39,10 +40,10 @@ namespace NVerilogParser
 
             if (Options.Cache)
             {
-                State.Cache = new Dictionary<long, IUnionResult<CharToken>>[tokens.Count];
+                State.Cache = new ConcurrentDictionary<long, IUnionResult<CharToken>>[tokens.Count];
                 for (var i = 0; i < State.Cache.Length; i++)
                 {
-                    State.Cache[i] = new Dictionary<long, IUnionResult<CharToken>>();
+                    State.Cache[i] = new ConcurrentDictionary<long, IUnionResult<CharToken>>();
                 }
             }
 
@@ -54,7 +55,7 @@ namespace NVerilogParser
                 }
             };
 
-            HackOrderOfDefinitions(State.VerilogSymbolTable, prepResult.Text);
+            HackOrderOfDefinitions(State.SymbolTable, prepResult.Text);
 
             var result = parser.TryParse(tokens, State);
 
@@ -69,7 +70,7 @@ namespace NVerilogParser
             return result;
         }
 
-        private void HackOrderOfDefinitions(SymbolTable verilogSymbolTable, string txt)
+        private void HackOrderOfDefinitions(VerilogSymbolTable<CharToken> verilogSymbolTable, string txt)
         {
             var modules = Regex.Matches(txt, @"(^|\b)module\s+(\w+)");
 
@@ -77,7 +78,26 @@ namespace NVerilogParser
             {
                 if (module.Success)
                 {
-                    verilogSymbolTable.Register(module.Groups[2].Value, "module_identifier", module.Index, SymbolEntryUseType.Definition);
+                    verilogSymbolTable.Root.RegisterDefinition(module.Groups[2].Value, "module_identifier", module.Index);
+                }
+            }
+
+            var disciplines = Regex.Matches(txt, @"(^|\b)discipline\s+\\?(\w+)");
+
+            foreach (Match discipline in disciplines)
+            {
+                if (discipline.Success)
+                {
+                    verilogSymbolTable.Root.RegisterDefinition(discipline.Groups[2].Value, "discipline_identifier", discipline.Index);
+                }
+            }
+
+            var natures = Regex.Matches(txt, @"(^|\b)nature\s+(\w+)");
+            foreach (Match nature in natures)
+            {
+                if (nature.Success)
+                {
+                    verilogSymbolTable.Root.RegisterDefinition(nature.Groups[2].Value, "nature_identifier", nature.Index);
                 }
             }
 
@@ -87,7 +107,7 @@ namespace NVerilogParser
             {
                 if (function.Success)
                 {
-                    verilogSymbolTable.Register(function.Groups[2].Value, "function_identifier", function.Index, SymbolEntryUseType.Definition);
+                    verilogSymbolTable.Root.RegisterDefinition(function.Groups[2].Value, "function_identifier", function.Index);
                 }
             }
         }

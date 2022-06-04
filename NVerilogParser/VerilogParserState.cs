@@ -5,6 +5,6 @@ namespace NVerilogParser
 {
     public class VerilogParserState<TToken> : GlobalState<TToken> where TToken : IToken
     {
-        public SymbolTable VerilogSymbolTable { get; } = new SymbolTable();
+        public VerilogSymbolTable<TToken> SymbolTable { get; set; } = new VerilogSymbolTable<TToken>(new Scope<TToken>(null));
     }
 }

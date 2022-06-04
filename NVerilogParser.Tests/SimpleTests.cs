@@ -252,7 +252,22 @@ endmodule ");
         {
             var txt = "resistor #(.r(10K)) r1(out,gnd);";
             var parser = new VerilogParser();
-            parser.State.VerilogSymbolTable.RegisterDefinition("resistor", "module_identifier", 0);
+            parser.State.SymbolTable.Root.RegisterDefinition("resistor", "module_identifier", 0);
+
+
+            var results = await parser.TryParse(Parsers.module_instantiation.Value.End(), txt);
+
+            Assert.True(results.WasSuccessful);
+            Assert.Single(results.Values);
+            Assert.False(results.Values[0].EmptyMatch);
+        }
+
+        [Fact]
+        public async void ModuleInstanceEmpty()
+        {
+            var txt = @" something # () something_inst (.CLK(2),.RST(3),.LED(4));";
+            var parser = new VerilogParser();
+            parser.State.SymbolTable.Root.RegisterDefinition("something", "module_identifier", 0);
 
 
             var results = await parser.TryParse(Parsers.module_instantiation.Value.End(), txt);
