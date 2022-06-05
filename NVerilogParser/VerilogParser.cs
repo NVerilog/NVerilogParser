@@ -14,6 +14,11 @@ namespace NVerilogParser
 {
     public class VerilogParser
     {
+        static VerilogParser()
+        {
+            VerilogParserActions.Init();
+        }
+
         public Preprocessor.Preprocessor Preprocessor { get; }
 
         public VerilogParserState<CharToken> State { get; }
@@ -22,8 +27,6 @@ namespace NVerilogParser
         {
             Preprocessor = new Preprocessor.Preprocessor(fileProvider, defines);
             State = new VerilogParserState<CharToken>();
-            State.BeforeParseActions = VerilogParserActions.BeforeActions;
-            State.AfterParseActions = VerilogParserActions.AfterActions;
         }
 
         public Task<IUnionResult<CharToken>> TryParse(string txt, Action<(int, int)> progress = null)

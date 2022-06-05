@@ -2,11 +2,9 @@
 using CFGToolkit.AST.Providers;
 using CFGToolkit.ParserCombinator;
 using CFGToolkit.ParserCombinator.Input;
-using CFGToolkit.ParserCombinator.Parsers;
 using CFGToolkit.ParserCombinator.State;
 using CFGToolkit.ParserCombinator.Values;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -17,34 +15,26 @@ namespace NVerilogParser
         private const int DefaultLookDownDepth = 3;
         private const int DefaultLookUpDepth = 16;
 
-        public static ConcurrentDictionary<string, ConcurrentBag<AfterParseAction<CharToken>>> AfterActions = new ConcurrentDictionary<string, ConcurrentBag<AfterParseAction<CharToken>>>();
+        private static object SyncRoot = new object();
 
-        public static ConcurrentDictionary<string, ConcurrentBag<BeforeParseAction<CharToken>>> BeforeActions = new ConcurrentDictionary<string, ConcurrentBag<BeforeParseAction<CharToken>>>();
-
-        static VerilogParserActions()
+        public static void Init()
         {
-            lock (AfterActions)
+            lock (SyncRoot)
             {
                 CreateActions();
             }
         }
 
-        public static void After(string name, Action<AfterArgs<CharToken>> action)
+        public static void After(IParser<CharToken, SyntaxNode> parser, Action<AfterParseArgs<CharToken>> action)
         {
-            if (!AfterActions.ContainsKey(name))
-            {
-                AfterActions[name] = new ConcurrentBag<AfterParseAction<CharToken>>();
-            }
-            AfterActions[name].Add(new AfterParseAction<CharToken>() { Index = AfterActions[name].Count, Action = action });
+            parser.EnableEvents();
+            parser.AfterParse.Add(action);
         }
 
-        public static void Before(string name, Action<BeforeArgs<CharToken>> action)
+        public static void Before(IParser<CharToken, SyntaxNode> parser, Action<BeforeParseArgs<CharToken>> action)
         {
-            if (!BeforeActions.ContainsKey(name))
-            {
-                BeforeActions[name] = new ConcurrentBag<BeforeParseAction<CharToken>>();
-            }
-            BeforeActions[name].Add(new BeforeParseAction<CharToken>() { Index = BeforeActions[name].Count, Action = action });
+            parser.EnableEvents();
+            parser.BeforeParse.Add(action);
         }
 
         private static void CreateActions()
@@ -52,25 +42,25 @@ namespace NVerilogParser
             var keywordsArray = VerilogKeywords.Values;
 
             // Modules
-            Before(nameof(Parsers.module_declaration), CreateScope(VerilogScopeType.Module));
-            After(nameof(Parsers.module_declaration), CloseScope());
-            After(nameof(Parsers.module_identifier), Enforce(VerilogScopeType.Module, nameof(Parsers.module_identifier), registerToParent: true));
+            Before(Parsers.module_declaration.Value, CreateScope(VerilogScopeType.Module));
+            After(Parsers.module_declaration.Value, CloseScope());
+            After(Parsers.module_identifier.Value, Enforce(VerilogScopeType.Module, nameof(Parsers.module_identifier), registerToParent: true));
 
-            Before(nameof(Parsers.module_instantiation), CreateScope(VerilogScopeType.ModuleInstantiation));
-            After(nameof(Parsers.module_instantiation), CloseScope());
+            Before(Parsers.module_instantiation.Value, CreateScope(VerilogScopeType.ModuleInstantiation));
+            After(Parsers.module_instantiation.Value, CloseScope());
 
             // Disciplines
-            Before(nameof(Parsers.discipline_declaration), CreateScope(VerilogScopeType.Discipline));
-            After(nameof(Parsers.discipline_declaration), CloseScope());
-            After(nameof(Parsers.discipline_identifier), Enforce(VerilogScopeType.Discipline, nameof(Parsers.discipline_identifier), registerToParent: true));
+            Before(Parsers.discipline_declaration.Value, CreateScope(VerilogScopeType.Discipline));
+            After(Parsers.discipline_declaration.Value, CloseScope());
+            After(Parsers.discipline_identifier.Value, Enforce(VerilogScopeType.Discipline, nameof(Parsers.discipline_identifier), registerToParent: true));
 
             // Natures
-            Before(nameof(Parsers.nature_declaration), CreateScope(VerilogScopeType.Nature));
-            After(nameof(Parsers.nature_declaration), CloseScope());
-            After(nameof(Parsers.nature_identifier), Enforce(VerilogScopeType.Nature, nameof(Parsers.nature_identifier), registerToParent: true));
+            Before(Parsers.nature_declaration.Value, CreateScope(VerilogScopeType.Nature));
+            After(Parsers.nature_declaration.Value, CloseScope());
+            After(Parsers.nature_identifier.Value, Enforce(VerilogScopeType.Nature, nameof(Parsers.nature_identifier), registerToParent: true));
 
 
-            After(nameof(Parsers.nature_attribute), CollectToRoot<SyntaxNode>("nature_attribute_access",
+            After(Parsers.nature_attribute.Value, CollectToRoot<SyntaxNode>("nature_attribute_access",
               (obj, scope) => obj
               .GetValue<SyntaxNode>()
               .GetNodes("nature_attribute", DefaultLookDownDepth)
@@ -80,55 +70,59 @@ namespace NVerilogParser
 
 
             // Functions
-            Before(nameof(Parsers.function_declaration), CreateScope(VerilogScopeType.Function));
-            After(nameof(Parsers.function_declaration), CloseScope());
-            After(nameof(Parsers.function_identifier), Enforce(VerilogScopeType.Function, nameof(Parsers.function_identifier), registerToParent: true));
+            Before(Parsers.function_declaration.Value, CreateScope(VerilogScopeType.Function));
+            After(Parsers.function_declaration.Value, CloseScope());
+            After(Parsers.function_identifier.Value, Enforce(VerilogScopeType.Function, nameof(Parsers.function_identifier), registerToParent: true));
 
             // Functions
-            Before(nameof(Parsers.analog_function_declaration), CreateScope(VerilogScopeType.Function));
-            After(nameof(Parsers.analog_function_declaration), CloseScope());
-            After(nameof(Parsers.analog_function_identifier), Enforce(VerilogScopeType.Function, nameof(Parsers.function_identifier), registerToParent: true));
+            Before(Parsers.analog_function_declaration.Value, CreateScope(VerilogScopeType.Function));
+            After(Parsers.analog_function_declaration.Value, CloseScope());
+            After(Parsers.analog_function_identifier.Value, Enforce(VerilogScopeType.Function, nameof(Parsers.function_identifier), registerToParent: true));
 
             // Blocks
 
-            Before(nameof(Parsers.seq_block), CreateScope(VerilogScopeType.Block));
-            After(nameof(Parsers.seq_block), CloseScope());
+            Before(Parsers.seq_block.Value, CreateScope(VerilogScopeType.Block));
+            After(Parsers.seq_block.Value, CloseScope());
 
-            Before(nameof(Parsers.analog_function_seq_block), CreateScope(VerilogScopeType.Block));
-            After(nameof(Parsers.analog_function_seq_block), CloseScope());
+            Before(Parsers.analog_function_seq_block.Value, CreateScope(VerilogScopeType.Block));
+            After(Parsers.analog_function_seq_block.Value, CloseScope());
 
-            Before(nameof(Parsers.analog_event_seq_block), CreateScope(VerilogScopeType.Block));
-            After(nameof(Parsers.analog_event_seq_block), CloseScope());
+            Before(Parsers.analog_event_seq_block.Value, CreateScope(VerilogScopeType.Block));
+            After(Parsers.analog_event_seq_block.Value, CloseScope());
 
-            Before(nameof(Parsers.analog_seq_block), CreateScope(VerilogScopeType.Block));
-            After(nameof(Parsers.analog_seq_block), CloseScope());
+            Before(Parsers.analog_seq_block.Value, CreateScope(VerilogScopeType.Block));
+            After(Parsers.analog_seq_block.Value, CloseScope());
 
-            Before(nameof(Parsers.par_block), CreateScope(VerilogScopeType.Block));
-            After(nameof(Parsers.par_block), CloseScope());
+            Before(Parsers.par_block.Value, CreateScope(VerilogScopeType.Block));
+            After(Parsers.par_block.Value, CloseScope());
 
-            After(nameof(Parsers.block_identifier), Enforce(VerilogScopeType.Block, nameof(Parsers.block_identifier)));
+            After(Parsers.block_identifier.Value, Enforce(VerilogScopeType.Block, nameof(Parsers.block_identifier)));
             // Declarations
 
-            Before(nameof(Parsers.paramset_declaration), CreateScope(VerilogScopeType.ParamsetDeclaration));
-            After(nameof(Parsers.paramset_declaration), CloseScope());
-            After(nameof(Parsers.paramset_identifier), Enforce(VerilogScopeType.ParamsetDeclaration, nameof(Parsers.paramset_identifier)));
+            Before(Parsers.paramset_declaration.Value, CreateScope(VerilogScopeType.ParamsetDeclaration));
+            After(Parsers.paramset_declaration.Value, CloseScope());
+            After(Parsers.paramset_identifier.Value, Enforce(VerilogScopeType.ParamsetDeclaration, nameof(Parsers.paramset_identifier)));
 
-            Before(nameof(Parsers.task_declaration), CreateScope(VerilogScopeType.TaskDeclaration));
-            After(nameof(Parsers.task_declaration), CloseScope());
-            After(nameof(Parsers.task_identifier), Enforce(VerilogScopeType.TaskDeclaration, nameof(Parsers.task_identifier)));
+            Before(Parsers.task_declaration.Value, CreateScope(VerilogScopeType.TaskDeclaration));
+            After(Parsers.task_declaration.Value, CloseScope());
+            After(Parsers.task_identifier.Value, Enforce(VerilogScopeType.TaskDeclaration, nameof(Parsers.task_identifier)));
 
 
-            Before(nameof(Parsers.inout_declaration), CreateScope(VerilogScopeType.InputOutputPortDeclaration));
-            After(nameof(Parsers.inout_declaration), CloseScope());
+            Before(Parsers.inout_declaration.Value, CreateScope(VerilogScopeType.InputOutputPortDeclaration));
+            After(Parsers.inout_declaration.Value, CloseScope());
 
-            Before(nameof(Parsers.input_declaration), CreateScope(VerilogScopeType.InputPortDeclaration));
-            After(nameof(Parsers.input_declaration), CloseScope());
+            Before(Parsers.input_declaration.Value, CreateScope(VerilogScopeType.InputPortDeclaration));
+            After(Parsers.input_declaration.Value, CloseScope());
 
-            Before(nameof(Parsers.output_declaration), CreateScope(VerilogScopeType.OutputPortDeclaration));
-            After(nameof(Parsers.output_declaration), CloseScope());
+            Before(Parsers.output_declaration.Value, CreateScope(VerilogScopeType.OutputPortDeclaration));
+            After(Parsers.output_declaration.Value, CloseScope());
 
-            After(nameof(Parsers.port_identifier), (args) =>
+            After(Parsers.port_identifier.Value, (args) =>
             {
+                if (args.GlobalState is not VerilogParserState<CharToken>)
+                {
+                    return;
+                }
                 var state = (VerilogParserState<CharToken>)args.GlobalState;
                 if (args.ParserResult.WasSuccessful)
                 {
@@ -165,19 +159,23 @@ namespace NVerilogParser
             });
 
 
-            Before(nameof(Parsers.event_declaration), CreateScope(VerilogScopeType.EventDeclaration));
-            After(nameof(Parsers.event_declaration), CloseScope());
-            After(nameof(Parsers.event_identifier), Enforce(VerilogScopeType.EventDeclaration, nameof(Parsers.event_identifier)));
+            Before(Parsers.event_declaration.Value, CreateScope(VerilogScopeType.EventDeclaration));
+            After(Parsers.event_declaration.Value, CloseScope());
+            After(Parsers.event_identifier.Value, Enforce(VerilogScopeType.EventDeclaration, nameof(Parsers.event_identifier)));
 
 
-            Before(nameof(Parsers.local_parameter_declaration), CreateScope(VerilogScopeType.LocalParameterDeclaration));
-            After(nameof(Parsers.local_parameter_declaration), CloseScope());
+            Before(Parsers.local_parameter_declaration.Value, CreateScope(VerilogScopeType.LocalParameterDeclaration));
+            After(Parsers.local_parameter_declaration.Value, CloseScope());
 
-            Before(nameof(Parsers.parameter_declaration), CreateScope(VerilogScopeType.ParameterDeclaration));
-            After(nameof(Parsers.parameter_declaration), CloseScope());
+            Before(Parsers.parameter_declaration.Value, CreateScope(VerilogScopeType.ParameterDeclaration));
+            After(Parsers.parameter_declaration.Value, CloseScope());
 
-            After(nameof(Parsers.specparam_identifier), (args) =>
+            After(Parsers.specparam_identifier.Value, (args) =>
             {
+                if (args.GlobalState is not VerilogParserState<CharToken>)
+                {
+                    return;
+                }
                 var state = (VerilogParserState<CharToken>)args.GlobalState;
                 if (args.ParserResult.WasSuccessful)
                 {
@@ -192,8 +190,12 @@ namespace NVerilogParser
             });
 
 
-            After(nameof(Parsers.parameter_identifier), (args) =>
+            After(Parsers.parameter_identifier.Value, (args) =>
             {
+                if (args.GlobalState is not VerilogParserState<CharToken>)
+                {
+                    return;
+                }
                 var state = (VerilogParserState<CharToken>)args.GlobalState;
                 if (args.ParserResult.WasSuccessful)
                 {
@@ -227,32 +229,36 @@ namespace NVerilogParser
             });
 
 
-            Before(nameof(Parsers.branch_declaration), CreateScope(VerilogScopeType.BranchDeclaration));
-            After(nameof(Parsers.branch_declaration), CloseScope());
-            After(nameof(Parsers.branch_identifier), Enforce(VerilogScopeType.BranchDeclaration, nameof(Parsers.branch_identifier)));
+            Before(Parsers.branch_declaration.Value, CreateScope(VerilogScopeType.BranchDeclaration));
+            After(Parsers.branch_declaration.Value, CloseScope());
+            After(Parsers.branch_identifier.Value, Enforce(VerilogScopeType.BranchDeclaration, nameof(Parsers.branch_identifier)));
 
-            Before(nameof(Parsers.net_declaration), CreateScope(VerilogScopeType.NetDeclaration));
-            After(nameof(Parsers.net_declaration), CloseScope());
+            Before(Parsers.net_declaration.Value, CreateScope(VerilogScopeType.NetDeclaration));
+            After(Parsers.net_declaration.Value, CloseScope());
 
-            //After(nameof(Parsers.net_identifier), Enforce(VerilogScopeType.NetDeclaration, nameof(Parsers.net_identifier), registerToParent: true));
-            //After(nameof(Parsers.ams_net_identifier), Enforce(VerilogScopeType.NetDeclaration, nameof(Parsers.net_identifier), registerToParent: true));
+            //After(Parsers.net_identifier.Value, Enforce(VerilogScopeType.NetDeclaration, Parsers.net_identifier), registerToParent: true));
+            //After(Parsers.ams_net_identifier.Value, Enforce(VerilogScopeType.NetDeclaration, Parsers.net_identifier), registerToParent: true));
 
 
-            Before(nameof(Parsers.udp_declaration), CreateScope(VerilogScopeType.UdpDeclaration));
-            After(nameof(Parsers.udp_declaration), CloseScope());
-            After(nameof(Parsers.udp_identifier), Enforce(VerilogScopeType.UdpDeclaration, nameof(Parsers.udp_identifier), registerToParent: true));
+            Before(Parsers.udp_declaration.Value, CreateScope(VerilogScopeType.UdpDeclaration));
+            After(Parsers.udp_declaration.Value, CloseScope());
+            After(Parsers.udp_identifier.Value, Enforce(VerilogScopeType.UdpDeclaration, nameof(Parsers.udp_identifier), registerToParent: true));
 
-            Before(nameof(Parsers.reg_declaration), CreateScope(VerilogScopeType.RegDeclaration));
-            After(nameof(Parsers.reg_declaration), CloseScope());
+            Before(Parsers.reg_declaration.Value, CreateScope(VerilogScopeType.RegDeclaration));
+            After(Parsers.reg_declaration.Value, CloseScope());
 
-            Before(nameof(Parsers.integer_declaration), CreateScope(VerilogScopeType.IntegerDeclaration));
-            After(nameof(Parsers.integer_declaration), CloseScope());
+            Before(Parsers.integer_declaration.Value, CreateScope(VerilogScopeType.IntegerDeclaration));
+            After(Parsers.integer_declaration.Value, CloseScope());
 
-            Before(nameof(Parsers.time_declaration), CreateScope(VerilogScopeType.TimeDeclaration));
-            After(nameof(Parsers.time_declaration), CloseScope());
+            Before(Parsers.time_declaration.Value, CreateScope(VerilogScopeType.TimeDeclaration));
+            After(Parsers.time_declaration.Value, CloseScope());
 
-            After(nameof(Parsers.variable_identifier), (args) =>
+            After(Parsers.variable_identifier.Value, (args) =>
             {
+                if (args.GlobalState is not VerilogParserState<CharToken>)
+                {
+                    return;
+                }
                 var state = (VerilogParserState<CharToken>)args.GlobalState;
                 if (args.ParserResult.WasSuccessful)
                 {
@@ -276,18 +282,22 @@ namespace NVerilogParser
                 }
             });
 
-            Before(nameof(Parsers.genvar_declaration), CreateScope(VerilogScopeType.GenvarDeclaration));
-            After(nameof(Parsers.genvar_declaration), CloseScope());
-            After(nameof(Parsers.genvar_identifier), Enforce(VerilogScopeType.GenvarDeclaration, nameof(Parsers.genvar_identifier), registerToParent: true));
+            Before(Parsers.genvar_declaration.Value, CreateScope(VerilogScopeType.GenvarDeclaration));
+            After(Parsers.genvar_declaration.Value, CloseScope());
+            After(Parsers.genvar_identifier.Value, Enforce(VerilogScopeType.GenvarDeclaration, nameof(Parsers.genvar_identifier), registerToParent: true));
             
-            Before(nameof(Parsers.real_declaration), CreateScope(VerilogScopeType.RealDeclaration));
-            After(nameof(Parsers.real_declaration), CloseScope());
+            Before(Parsers.real_declaration.Value, CreateScope(VerilogScopeType.RealDeclaration));
+            After(Parsers.real_declaration.Value, CloseScope());
 
-            Before(nameof(Parsers.realtime_declaration), CreateScope(VerilogScopeType.RealTimeDeclaration));
-            After(nameof(Parsers.realtime_declaration), CloseScope());
+            Before(Parsers.realtime_declaration.Value, CreateScope(VerilogScopeType.RealTimeDeclaration));
+            After(Parsers.realtime_declaration.Value, CloseScope());
 
-            After(nameof(Parsers.real_identifier), (args) =>
+            After(Parsers.real_identifier.Value, (args) =>
             {
+                if (args.GlobalState is not VerilogParserState<CharToken>)
+                {
+                    return;
+                }
                 var state = (VerilogParserState<CharToken>)args.GlobalState;
                 if (args.ParserResult.WasSuccessful)
                 {
@@ -314,39 +324,39 @@ namespace NVerilogParser
                 }
             });
 
-            Before(nameof(Parsers.aliasparam_declaration), CreateScope(VerilogScopeType.AliasParam));
-            After(nameof(Parsers.aliasparam_declaration), CloseScope());
+            Before(Parsers.aliasparam_declaration.Value, CreateScope(VerilogScopeType.AliasParam));
+            After(Parsers.aliasparam_declaration.Value, CloseScope());
 
             // Others
-            After(nameof(Parsers.identifier), Enforce<SyntaxNode>((value, state, callStack) =>
+            After(Parsers.identifier.Value, Enforce<SyntaxNode>((value, state, callStack) =>
             {
                 return !keywordsArray.Contains(value);
             }, new string[] { }, (obj, scope) => obj.Text(), 0));
 
-            After(nameof(Parsers.port_identifier), Enforce<SyntaxNode>((value, state, callStack) =>
+            After(Parsers.port_identifier.Value, Enforce<SyntaxNode>((value, state, callStack) =>
             {
                 return !keywordsArray.Contains(value);
             }, new string[] { }, (obj, scope) => obj.Text(), 0));
 
-            After(nameof(Parsers.parameter_reference), Enforce<SyntaxNode>((value, state, callStack) =>
+            After(Parsers.parameter_reference.Value, Enforce<SyntaxNode>((value, state, callStack) =>
             {
                 var symbolScope = state.SymbolTable.GetCurrentScope(callStack);
                 return symbolScope.HasDefinition(new[] { "parameter_identifier", "local_parameter_identifier" }, value);
             }, new string[] { }, (obj, scope) => obj.Text(), 0));
 
-            After(nameof(Parsers.hierarchical_event_identifier), Enforce<SyntaxNode>((value, state, callStack) =>
+            After(Parsers.hierarchical_event_identifier.Value, Enforce<SyntaxNode>((value, state, callStack) =>
             {
                 var scope = state.SymbolTable.GetCurrentScope(callStack);
                 return scope.HasDefinition(new[] { "event_identifier", "net_identifier", "output_port", "input_port" }, value);
 
             }, new string[] { }, (obj, Scope) => obj.Text(), 0));
 
-            After(nameof(Parsers.hierarchical_task_identifier), Enforce<SyntaxNode>((value, state, callStack) =>
+            After(Parsers.hierarchical_task_identifier.Value, Enforce<SyntaxNode>((value, state, callStack) =>
             {
                 return state.SymbolTable.GetCurrentScope(callStack).HasDefinition("task_identifier", value);
             }, new string[] { }, (obj, scope) => obj.Text(), 0));
 
-            After(nameof(Parsers.escaped_identifier), (args) =>
+            After(Parsers.escaped_identifier.Value, (args) =>
             {
                 if (args.ParserResult.WasSuccessful)
                 {
@@ -355,8 +365,8 @@ namespace NVerilogParser
                 }
             });
 
-            After(nameof(Parsers.system_parameter_identifier), Limit<SyntaxNode>(new[] { "$mfactor", "$xposition" }, (obj, scope) => obj.Text()));
-            After(nameof(Parsers.nature_attribute_identifier), Enforce<SyntaxNode>((value, state, callStack) =>
+            After(Parsers.system_parameter_identifier.Value, Limit<SyntaxNode>(new[] { "$mfactor", "$xposition" }, (obj, scope) => obj.Text()));
+            After(Parsers.nature_attribute_identifier.Value, Enforce<SyntaxNode>((value, state, callStack) =>
             {
                 if (value == "abstol")
                 {
@@ -368,19 +378,20 @@ namespace NVerilogParser
                 return symbolScope.HasDefinition("nature_attribute_identifier", value)
                  || symbolScope.HasDefinition("nature_attribute_access", value) && (callStack.IsPresent("branch_probe_function_call", DefaultLookUpDepth) || callStack.IsPresent("port_probe_function_call", DefaultLookUpDepth));
             }, new[] { "nature_attribute" }, (obj, scope) => obj.Text(), DefaultLookUpDepth));
+            
 
-            After(nameof(Parsers.hierarchical_function_identifier), Enforce<SyntaxNode>((value, state, callStack) =>
+            After(Parsers.hierarchical_function_identifier.Value, Enforce<SyntaxNode>((value, state, callStack) =>
             {
                 return state.SymbolTable.GetCurrentScope(callStack).HasDefinition("function_identifier", value);
             }, new string[] { }, (obj, scope) => obj.Text(), 0));
 
-            After(nameof(Parsers.hierarchical_block_identifier), Enforce<SyntaxNode>((value, state, callStack) =>
+            After(Parsers.hierarchical_block_identifier.Value, Enforce<SyntaxNode>((value, state, callStack) =>
             {
                 return state.SymbolTable.GetCurrentScope(callStack).HasDefinition("block_identifier", value);
             }, new string[] { }, (obj, scope) => obj.Text(), 0));
         }
 
-        private static Action<AfterArgs<CharToken>> Enforce(string scopeType, string definitionType, bool registerToParent = false)
+        private static Action<AfterParseArgs<CharToken>> Enforce(string scopeType, string definitionType, bool registerToParent = false)
         {
             return (args) =>
             {
@@ -417,19 +428,27 @@ namespace NVerilogParser
             };
         }
 
-        private static Action<BeforeArgs<CharToken>> CreateScope(string scopeType)
+        private static Action<BeforeParseArgs<CharToken>> CreateScope(string scopeType)
         {
             return (args) =>
             {
+                if (args.GlobalState is not VerilogParserState<CharToken>)
+                {
+                    return;
+                }
                 var state = (VerilogParserState<CharToken>)args.GlobalState;
                 state.SymbolTable.OpenScope(args.ParserCallStack, scopeType, args.Input.Position);
             };
         }
 
-        private static Action<AfterArgs<CharToken>> CloseScope()
+        private static Action<AfterParseArgs<CharToken>> CloseScope()
         {
             return (args) =>
             {
+                if (args.GlobalState is not VerilogParserState<CharToken>)
+                {
+                    return;
+                }
                 var state = (VerilogParserState<CharToken>)args.GlobalState;
 
                 if (args.ParserResult.WasSuccessful)
@@ -443,7 +462,7 @@ namespace NVerilogParser
             };
         }
 
-        public static Action<AfterArgs<CharToken>> Limit<TResult>(string[] allowed, Func<IUnionResultValue<CharToken>, IParserCallStack<CharToken>, string> factory)
+        public static Action<AfterParseArgs<CharToken>> Limit<TResult>(string[] allowed, Func<IUnionResultValue<CharToken>, IParserCallStack<CharToken>, string> factory)
         {
             return (args) =>
             {
@@ -474,7 +493,7 @@ namespace NVerilogParser
             };
         }
 
-        public static Action<AfterArgs<CharToken>> Enforce<TResult>(Func<string, VerilogParserState<CharToken>, IParserCallStack<CharToken>, bool> validator, string[] parents, Func<IUnionResultValue<CharToken>, IParserCallStack<CharToken>, string> factory, int depth)
+        public static Action<AfterParseArgs<CharToken>> Enforce<TResult>(Func<string, VerilogParserState<CharToken>, IParserCallStack<CharToken>, bool> validator, string[] parents, Func<IUnionResultValue<CharToken>, IParserCallStack<CharToken>, string> factory, int depth)
         {
             return (args) =>
             {
@@ -513,7 +532,7 @@ namespace NVerilogParser
             };
         }
 
-        public static Action<AfterArgs<CharToken>> CollectToRoot<TResult>(string dataSetName, Func<IUnionResultValue<CharToken>, IParserCallStack<CharToken>, IEnumerable<string>> factory)
+        public static Action<AfterParseArgs<CharToken>> CollectToRoot<TResult>(string dataSetName, Func<IUnionResultValue<CharToken>, IParserCallStack<CharToken>, IEnumerable<string>> factory)
         {
             return (args) =>
             {
