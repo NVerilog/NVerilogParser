@@ -8,7 +8,7 @@
     <ApplicationIcon />
     <StartupObject />
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Version>1.0.0-beta-13</Version>
+    <Version>1.0.0-beta-14</Version>
     <Authors>Marcin Gołębiowski</Authors>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
