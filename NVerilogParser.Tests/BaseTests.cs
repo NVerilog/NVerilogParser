@@ -2,7 +2,6 @@ using CFGToolkit.ParserCombinator;
 using CFGToolkit.ParserCombinator.Input;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -40,9 +39,12 @@ namespace NVerilogParser.Tests
             var state = results.GlobalState;
             if (!results.WasSuccessful)
             {
-                var nonConsumed = results.Input.Tokens.Skip(state.LastConsumedPosition + 1);
-                string ctxt = string.Join("", nonConsumed.Select(s => s.Value));
-                Assert.True(false, ctxt + "\r\n==\r\n" + txt);
+                var reminder = results.Input.GetReminder(state.LastConsumedPosition + 1);
+
+                var consumed = state.LastConsumedCallStack?.Value;
+                var failed = state.GetUniqueFailedCallStacks();
+
+                Assert.True(false, reminder);
             }
 
             Assert.True(results.WasSuccessful, txt);
