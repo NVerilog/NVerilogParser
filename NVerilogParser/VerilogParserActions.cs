@@ -124,7 +124,7 @@ namespace NVerilogParser
                     return;
                 }
                 var state = (VerilogParserState<CharToken>)args.GlobalState;
-                if (args.ParserResult.WasSuccessful)
+                if (args.ParserResult.IsSuccessful)
                 {
                     var name = (args.ParserResult.Values[0].Value as SyntaxNode).Text().Trim();
                     var scope = state.SymbolTable.GetCurrentScope(args.ParserCallStack);
@@ -177,7 +177,7 @@ namespace NVerilogParser
                     return;
                 }
                 var state = (VerilogParserState<CharToken>)args.GlobalState;
-                if (args.ParserResult.WasSuccessful)
+                if (args.ParserResult.IsSuccessful)
                 {
                     var name = (args.ParserResult.Values[0].Value as SyntaxNode).Text().Trim();
                     var scope = state.SymbolTable.GetCurrentScope(args.ParserCallStack);
@@ -197,7 +197,7 @@ namespace NVerilogParser
                     return;
                 }
                 var state = (VerilogParserState<CharToken>)args.GlobalState;
-                if (args.ParserResult.WasSuccessful)
+                if (args.ParserResult.IsSuccessful)
                 {
                     var name = (args.ParserResult.Values[0].Value as SyntaxNode).Text().Trim();
                     var scope = state.SymbolTable.GetCurrentScope(args.ParserCallStack);
@@ -260,7 +260,7 @@ namespace NVerilogParser
                     return;
                 }
                 var state = (VerilogParserState<CharToken>)args.GlobalState;
-                if (args.ParserResult.WasSuccessful)
+                if (args.ParserResult.IsSuccessful)
                 {
                     var name = (args.ParserResult.Values[0].Value as SyntaxNode).Text().Trim();
                     var scope = state.SymbolTable.GetCurrentScope(args.ParserCallStack);
@@ -299,7 +299,7 @@ namespace NVerilogParser
                     return;
                 }
                 var state = (VerilogParserState<CharToken>)args.GlobalState;
-                if (args.ParserResult.WasSuccessful)
+                if (args.ParserResult.IsSuccessful)
                 {
                     var name = (args.ParserResult.Values[0].Value as SyntaxNode).Text().Trim();
                     var scope = state.SymbolTable.GetCurrentScope(args.ParserCallStack);
@@ -358,7 +358,7 @@ namespace NVerilogParser
 
             After(Parsers.escaped_identifier.Value, (args) =>
             {
-                if (args.ParserResult.WasSuccessful)
+                if (args.ParserResult.IsSuccessful)
                 {
                     var token = (args.ParserResult.Values[0].Value as SyntaxNode).GetFirstToken();
                     token.Value = token.Value.Substring(1);
@@ -400,7 +400,7 @@ namespace NVerilogParser
                     return;
                 }
                 var state = (VerilogParserState<CharToken>)args.GlobalState;
-                if (args.ParserResult.WasSuccessful)
+                if (args.ParserResult.IsSuccessful)
                 {
                     var scope = state.SymbolTable.GetCurrentScope(args.ParserCallStack);
 
@@ -451,7 +451,7 @@ namespace NVerilogParser
                 }
                 var state = (VerilogParserState<CharToken>)args.GlobalState;
 
-                if (args.ParserResult.WasSuccessful)
+                if (args.ParserResult.IsSuccessful)
                 {
                     state.SymbolTable.GetCurrentScope(args.ParserCallStack).Close(args.Input.Position);
                 }
@@ -468,7 +468,7 @@ namespace NVerilogParser
             {
                 var obj = args.ParserResult;
 
-                if (obj.WasSuccessful)
+                if (obj.IsSuccessful)
                 {
                     List<IUnionResultValue<CharToken>> newItems = null;
 
@@ -506,7 +506,7 @@ namespace NVerilogParser
                 var state = (VerilogParserState<CharToken>)args.GlobalState;
                 var callStack = args.ParserCallStack;
 
-                if (obj.WasSuccessful)
+                if (obj.IsSuccessful)
                 {
                     if (parents.Any(p => callStack.IsPresent(p, depth)))
                     {
@@ -544,7 +544,7 @@ namespace NVerilogParser
                 var state = (VerilogParserState<CharToken>)args.GlobalState;
                 var callStack = args.ParserCallStack;
 
-                if (obj.WasSuccessful)
+                if (obj.IsSuccessful)
                 {
                     foreach (var res in obj.Values)
                     {

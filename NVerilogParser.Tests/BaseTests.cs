@@ -37,7 +37,7 @@ namespace NVerilogParser.Tests
             Assert.True(result, txt);
 
             var state = results.GlobalState;
-            if (!results.WasSuccessful)
+            if (!results.IsSuccessful)
             {
                 var reminder = results.Input.GetReminder(state.LastConsumedPosition + 1);
 
@@ -47,7 +47,7 @@ namespace NVerilogParser.Tests
                 Assert.True(false, reminder);
             }
 
-            Assert.True(results.WasSuccessful, txt);
+            Assert.True(results.IsSuccessful, txt);
             Assert.True(results.Values.Count == 1, txt);
             Assert.False(results.Values[0].EmptyMatch);
         }

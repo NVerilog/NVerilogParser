@@ -63,7 +63,7 @@ namespace NVerilogParser
             var result = parser.TryParse(tokens, State);
 
             // Set parents 
-            if (result.Values?.Count == 1)
+            if (result.IsSuccessful && result.Values?.Count == 1)
             {
                 var visitor = new SetParentVisitor();
                 var traversal = new PreOrderTreeTraversal<bool>(visitor);
