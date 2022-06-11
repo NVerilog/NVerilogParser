@@ -98,6 +98,15 @@ endmodule");
         }
 
         [Fact]
+        public void Operator()
+        {
+            var results = Parsers.binary_operator_4.Value.End().TryParse(">=");
+            Assert.True(results.IsSuccessful);
+            Assert.True(results.Values.Count == 1);
+            Assert.False(results.Values[0].EmptyMatch);
+        }
+
+        [Fact]
         public void Binary1()
         {
             var results = Parsers.binary_number.Value.End().TryParse("16'b0000_1111_1010_0101");
