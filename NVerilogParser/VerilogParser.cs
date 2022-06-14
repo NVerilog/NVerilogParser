@@ -43,11 +43,7 @@ namespace NVerilogParser
 
             if (Options.Cache)
             {
-                State.Cache = new ConcurrentDictionary<long, IUnionResult<CharToken>>[tokens.Count];
-                for (var i = 0; i < State.Cache.Length; i++)
-                {
-                    State.Cache[i] = new ConcurrentDictionary<long, IUnionResult<CharToken>>();
-                }
+                State.Cache = new IUnionResult<CharToken>[tokens.Count, Parsers.MaxCached];
             }
 
             State.UpdateHandler = (result) =>
