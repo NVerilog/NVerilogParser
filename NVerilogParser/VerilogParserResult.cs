@@ -20,7 +20,7 @@ namespace NVerilogParser
 
         protected IUnionResult<CharToken> ParseResult { get; private set; }
 
-        public SyntaxNode Result { get; set; }
+        public SyntaxNode ConcreteSyntaxTree { get; set; }
 
         public IGlobalState<CharToken> GlobalState { get; set; }
 
@@ -40,9 +40,9 @@ namespace NVerilogParser
                 {
                     EmptyMatch = ParseResult.Values[0].EmptyMatch;
 
-                    Result = ParseResult.Values[0].Value as SyntaxNode;
+                    ConcreteSyntaxTree = ParseResult.Values[0].Value as SyntaxNode;
 
-                    if (Result != null)
+                    if (ConcreteSyntaxTree != null)
                     {
                         TransformResult();
                     }
@@ -63,7 +63,7 @@ namespace NVerilogParser
         {
             var visitor = new SetParentVisitor();
             var traversal = new PreOrderTreeTraversal<bool>(visitor);
-            traversal.Accept(Result, new TreeTraversalContext());
+            traversal.Accept(ConcreteSyntaxTree, new TreeTraversalContext());
         }
     }
 }
