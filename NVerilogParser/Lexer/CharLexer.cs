@@ -29,29 +29,9 @@ namespace NVerilogParser.Lexer
                 }
                 else
                 {
-                    var trimmed = line.TrimEnd('\r', '\n');
-
-                    if (trimmed.Length == 0)
+                    for (var i = 0; i < line.Length; i++)
                     {
-                        tokens.Add(new CharToken() { Position = position++, Value = ' ', Line = lineNumber });
-                    }
-                    else
-                    {
-                        line = trimmed + ' ';
-
-                        char? prev = null;
-                        for (var i = 0; i < line.Length; i++)
-                        {
-                            int index = i + position++;
-
-                            if (prev != null && char.IsWhiteSpace(prev.Value) && char.IsWhiteSpace(line[i]))
-                            {
-                                continue;
-                            }
-
-                            tokens.Add(new CharToken() { Position = index, Value = line[i], Line = lineNumber });
-                            prev = line[i];
-                        }
+                        tokens.Add(new CharToken() { Position = position++, Value = line[i], Line = lineNumber });
                     }
                 }
 
