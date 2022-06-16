@@ -1,11 +1,8 @@
 ﻿using CFGToolkit.AST;
-using CFGToolkit.AST.Visitors.Cases;
-using CFGToolkit.AST.Visitors.Traversals;
 using CFGToolkit.ParserCombinator;
 using CFGToolkit.ParserCombinator.Input;
 using NVerilogParser.Lexer;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -14,11 +11,6 @@ namespace NVerilogParser
 {
     public class VerilogParser
     {
-        static VerilogParser()
-        {
-            VerilogParserActions.Init();
-        }
-
         public Preprocessor.Preprocessor Preprocessor { get; }
 
         public VerilogParserState<CharToken> State { get; }
@@ -29,12 +21,12 @@ namespace NVerilogParser
             State = new VerilogParserState<CharToken>();
         }
 
-        public Task<IUnionResult<CharToken>> TryParse(string txt, Action<(int, int)> progress = null)
+        public Task<VerilogParserResult> TryParse(string txt, Action<(int, int)> progress = null)
         {
             return TryParse(Parsers.source_text.Value.End(), txt, progress);
         }
 
-        public async Task<IUnionResult<CharToken>> TryParse(IParser<CharToken, SyntaxNode> parser, string txt, Action<(int, int)> progress = null)
+        public async Task<VerilogParserResult> TryParse(IParser<CharToken, SyntaxNode> parser, string txt, Action<(int, int)> progress = null)
         {
             var prepResult = await Preprocessor.DoPreprocessing(txt);
 
@@ -58,15 +50,7 @@ namespace NVerilogParser
 
             var result = parser.TryParse(tokens, State);
 
-            // Set parents 
-            if (result.IsSuccessful && result.Values?.Count == 1)
-            {
-                var visitor = new SetParentVisitor();
-                var traversal = new PreOrderTreeTraversal<bool>(visitor);
-                traversal.Accept(result.Values[0].Value as SyntaxNode, new TreeTraversalContext());
-            }
-
-            return result;
+            return new VerilogParserResult(result);
         }
 
         private void HackOrderOfDefinitions(VerilogSymbolTable<CharToken> verilogSymbolTable, string txt)

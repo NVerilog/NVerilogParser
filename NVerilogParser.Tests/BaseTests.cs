@@ -1,4 +1,3 @@
-using CFGToolkit.ParserCombinator;
 using CFGToolkit.ParserCombinator.Input;
 using System.Collections.Generic;
 using System.IO;
@@ -29,17 +28,17 @@ namespace NVerilogParser.Tests
 
             var timeout = 1000 * 60 * 10;
 
-            IUnionResult<CharToken> results = null;
+            VerilogParserResult result = null;
 
-            var task = new Task(async () => { results = await parser.TryParse(txt); });
+            var task = new Task(async () => { result = await parser.TryParse(txt); });
             task.Start();
-            var result = Task.WaitAll(new[] { task }, timeout);
-            Assert.True(result, txt);
+            var taskResult = Task.WaitAll(new[] { task }, timeout);
+            Assert.True(taskResult, txt);
 
-            var state = results.GlobalState;
-            if (!results.IsSuccessful)
+            var state = result.GlobalState;
+            if (!result.IsSuccessful)
             {
-                var reminder = results.Input.GetReminder(state.LastConsumedPosition + 1);
+                var reminder = result.Input.GetReminder(state.LastConsumedPosition + 1);
 
                 var consumed = state.LastConsumedCallStack?.Value;
                 var failed = state.GetUniqueFailedCallStacks();
@@ -47,9 +46,9 @@ namespace NVerilogParser.Tests
                 Assert.True(false, reminder);
             }
 
-            Assert.True(results.IsSuccessful, txt);
-            Assert.True(results.Values.Count == 1, txt);
-            Assert.False(results.Values[0].EmptyMatch);
+            Assert.True(result.IsSuccessful, txt);
+            Assert.False(result.IsAmbiguous);
+            Assert.False(result.EmptyMatch);
         }
     }
 }

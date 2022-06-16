@@ -10,13 +10,13 @@ using System.Linq;
 
 namespace NVerilogParser
 {
-    public class VerilogParserActions
+    public partial class Parsers
     {
         private const int DefaultLookDownDepth = 3;
 
         private static object SyncRoot = new object();
 
-        public static void Init()
+        static Parsers()
         {
             lock (SyncRoot)
             {
