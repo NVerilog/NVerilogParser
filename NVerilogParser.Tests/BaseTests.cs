@@ -38,7 +38,7 @@ namespace NVerilogParser.Tests
             var state = result.GlobalState;
             if (!result.IsSuccessful)
             {
-                var reminder = result.Input.GetReminder(state.LastConsumedPosition + 1);
+                var reminder = result.FullText.Substring(state.LastConsumedPosition);
 
                 var consumed = state.LastConsumedCallStack?.Value;
                 var failed = state.GetUniqueFailedCallStacks();

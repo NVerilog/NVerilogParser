@@ -5,7 +5,9 @@ namespace NVerilogParser.Preprocessor
 {
     public class PreprocessorResult
     {
-        public string Text { get; set; }
+        public string ParsableText { get; set; }
+
+        public string FullText { get; set; }
 
         public List<Directive> Directives { get; set; }
 

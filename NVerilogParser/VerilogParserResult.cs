@@ -4,6 +4,8 @@ using CFGToolkit.AST.Visitors.Traversals;
 using CFGToolkit.ParserCombinator;
 using CFGToolkit.ParserCombinator.Input;
 using CFGToolkit.ParserCombinator.State;
+using NPreprocessor.Output;
+using System.Collections.Generic;
 
 namespace NVerilogParser
 {
@@ -13,7 +15,6 @@ namespace NVerilogParser
         {
             ParseResult = result ?? throw new System.ArgumentNullException(nameof(result));
             GlobalState = result.GlobalState;
-            Input = result.Input;
 
             Process();
         }
@@ -24,7 +25,13 @@ namespace NVerilogParser
 
         public IGlobalState<CharToken> GlobalState { get; set; }
 
-        public IInputStream<CharToken> Input { get; }
+        public string OriginalText { get; set; }
+
+        public string FullText { get; set; }
+
+        public string ParsableText { get; set; }
+
+        public List<CommentBlock> Comments { get; set; }
 
         public bool IsSuccessful => ParseResult.IsSuccessful;
 

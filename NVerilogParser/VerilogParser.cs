@@ -31,7 +31,7 @@ namespace NVerilogParser
             var prepResult = await Preprocessor.DoPreprocessing(txt);
 
             var lexer = new CharLexer();
-            var tokens = lexer.GetTokens(prepResult.Text);
+            var tokens = lexer.GetTokens(prepResult.ParsableText);
 
             if (Options.Cache)
             {
@@ -46,11 +46,11 @@ namespace NVerilogParser
                 }
             };
 
-            HackOrderOfDefinitions(State.SymbolTable, prepResult.Text);
+            HackOrderOfDefinitions(State.SymbolTable, prepResult.ParsableText);
 
             var result = parser.TryParse(tokens, State);
 
-            return new VerilogParserResult(result);
+            return new VerilogParserResult(result) { OriginalText = txt, FullText = prepResult.FullText, ParsableText = prepResult.ParsableText, Comments = prepResult.Comments };
         }
 
         private void HackOrderOfDefinitions(VerilogSymbolTable<CharToken> verilogSymbolTable, string txt)

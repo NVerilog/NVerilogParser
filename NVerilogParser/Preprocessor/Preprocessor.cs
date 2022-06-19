@@ -93,7 +93,8 @@ namespace NVerilogParser.Preprocessor
 
             return new PreprocessorResult()
             {
-                Text = txtToParse,
+                ParsableText = txtToParse,
+                FullText = result.FullText,
                 Directives = directives,
                 Comments = comments
             };
