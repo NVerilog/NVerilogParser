@@ -28,10 +28,10 @@ namespace NVerilogParser
 
         public async Task<VerilogParserResult> TryParse(IParser<CharToken, SyntaxNode> parser, string txt, Action<(int, int)> progress = null)
         {
-            var prepResult = await Preprocessor.DoPreprocessing(txt);
+            var preprocessorResult = await Preprocessor.DoPreprocessing(txt);
 
             var lexer = new CharLexer();
-            var tokens = lexer.GetTokens(prepResult.ParsableText);
+            var tokens = lexer.GetTokens(preprocessorResult.ParsableText);
 
             if (Options.Cache)
             {
@@ -46,11 +46,11 @@ namespace NVerilogParser
                 }
             };
 
-            HackOrderOfDefinitions(State.SymbolTable, prepResult.ParsableText);
+            HackOrderOfDefinitions(State.SymbolTable, preprocessorResult.ParsableText);
 
             var result = parser.TryParse(tokens, State);
 
-            return new VerilogParserResult(result) { OriginalText = txt, FullText = prepResult.FullText, ParsableText = prepResult.ParsableText, Comments = prepResult.Comments };
+            return await VerilogParserResultFactory.Create(result, txt, preprocessorResult.FullText, preprocessorResult.ParsableText, preprocessorResult.Comments, preprocessorResult.Directives);
         }
 
         private void HackOrderOfDefinitions(VerilogSymbolTable<CharToken> verilogSymbolTable, string txt)
