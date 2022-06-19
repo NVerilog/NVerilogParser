@@ -1,10 +1,13 @@
 ﻿using NPreprocessor;
+using NPreprocessor.Input;
 using NPreprocessor.Macros;
 using NPreprocessor.Macros.Derivations;
+using NPreprocessor.Output;
 using NVerilogParser.Preprocessor.Directives;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -18,7 +21,7 @@ namespace NVerilogParser.Preprocessor
 
         public Preprocessor(Func<string, Task<string>> fileProvider = null, Dictionary<string, string> defines = null)
         {
-            var macroResolver = MacroResolverFactory.CreateDefault(true, Environment.NewLine);
+            var macroResolver = MacroResolverFactory.CreateDefault(false, Environment.NewLine);
             macroResolver.Macros.Add(new ExpandedIfDefMacro("`ifdef", "`else", "`endif"));
             macroResolver.Macros.Add(new ExpandedIfNDefMacro("`ifndef", "`else", "`endif"));
             macroResolver.Macros.Add(new ExpandedDefineMacro("`define"));
@@ -39,7 +42,7 @@ namespace NVerilogParser.Preprocessor
             {
                 macroResolver.Macros.OfType<IncludeMacro>().Single().Provider = fileProvider;
             }
-
+            macroResolver.Macros.OfType<IfMacro>().Single().Pattern = "iff";
             _definitions = defines;
 
             MacroResolver = macroResolver;
@@ -70,10 +73,29 @@ namespace NVerilogParser.Preprocessor
                 directives.Add(_timescale);
             }
 
+            var txtToParseBuilder = new StringBuilder();
+
+            var comments = new List<CommentBlock>();
+            foreach (var block in result.Blocks)
+            {
+                if (block is CommentBlock c)
+                {
+                    comments.Add(c);
+                    txtToParseBuilder.Append(new String(' ', block.Value.Length));
+                }
+                else
+                {
+                    txtToParseBuilder.Append(block.Value);
+                }
+            }
+
+            var txtToParse = txtToParseBuilder.ToString();
+
             return new PreprocessorResult()
             {
-                Text = string.Join(string.Empty, result.Blocks.Select(b => b.Value)),
-                Directives = directives
+                Text = txtToParse,
+                Directives = directives,
+                Comments = comments
             };
         }
     }
